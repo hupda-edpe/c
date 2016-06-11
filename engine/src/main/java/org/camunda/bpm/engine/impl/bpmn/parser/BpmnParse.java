@@ -254,6 +254,7 @@ public class BpmnParse extends Parse {
    */
   protected Map<String, MessageDefinition> messages = new HashMap<String, MessageDefinition>();
   protected Map<String, SignalDefinition> signals = new HashMap<String, SignalDefinition>();
+  protected Map<String, CepQueryDefinition> cepQueries = new HashMap<String, CepQueryDefinition>();
 
   // Members
   protected ExpressionManager expressionManager;
@@ -318,6 +319,7 @@ public class BpmnParse extends Parse {
     parseImports();
     parseMessages();
     parseSignals();
+    parseCepQueries();
     parseErrors();
     parseEscalations();
     parseProcessDefinitions();
@@ -438,6 +440,38 @@ public class BpmnParse extends Parse {
         signal.setId(this.targetNamespace + ":" + id);
         signal.setName(signalName);
         this.signals.put(signal.getId(), signal);
+      }
+    }
+  }
+
+  /**
+   * Parses the CEP queries of the given definitions file.
+   */
+  protected void parseCepQueries() {
+    Element extensionElements = rootElement.element("extensionElements");
+    if (extensionElements == null) {
+      return;
+    }
+    for (Element cepQueryElement : extensionElements.elements("cepQuery")) {
+      String id = cepQueryElement.attribute("id");
+      String queryName = cepQueryElement.attribute("name");
+
+      for (CepQueryDefinition cepQueryDefinition : cepQueries.values()) {
+        if (cepQueryDefinition.getName().equals(queryName)) {
+          addError("duplicate CEP query name '" + queryName + "'.", cepQueryElement);
+        }
+      }
+
+      if (id == null) {
+        addError("CEP query must have an id", cepQueryElement);
+      } else if (queryName == null) {
+        addError("CEP query with id '" + id + "' has no name", cepQueryElement);
+
+      } else {
+        CepQueryDefinition cepQuery = new CepQueryDefinition();
+        cepQuery.setId(this.targetNamespace + ":" + id);
+        cepQuery.setName(queryName);
+        this.cepQueries.put(cepQuery.getId(), cepQuery);
       }
     }
   }
@@ -1337,6 +1371,11 @@ public class BpmnParse extends Parse {
     Element signalEventDefinition = intermediateEventElement.element("signalEventDefinition");
     Element messageEventDefinition = intermediateEventElement.element("messageEventDefinition");
     Element linkEventDefinitionElement = intermediateEventElement.element("linkEventDefinition");
+    Element extensionElements = intermediateEventElement.element("extensionElements");
+    Element cepEventDefinition = null;
+    if (extensionElements != null) {
+        cepEventDefinition = extensionElements.element("cepEventDefinition");
+    }
 
     // shared by all events except for link event
     IntermediateCatchEventActivityBehavior defaultCatchBehaviour = new IntermediateCatchEventActivityBehavior(eventBasedGateway != null);
@@ -1370,7 +1409,11 @@ public class BpmnParse extends Parse {
       nestedActivity.setActivityBehavior(new IntermediateCatchLinkEventActivityBehavior());
       parseIntermediateLinkEventCatchBehavior(intermediateEventElement, nestedActivity, linkEventDefinitionElement);
 
-    } else {
+    } else if (cepEventDefinition != null) {
+      nestedActivity.setActivityBehavior(defaultCatchBehaviour);
+      parseIntermediateCepEventDefinition(cepEventDefinition, nestedActivity);
+    }
+    else {
       addError("Unsupported intermediate catch event type", intermediateEventElement);
     }
 
@@ -3060,6 +3103,48 @@ public class BpmnParse extends Parse {
       signalEventDefinition.setAsync(throwingAsynch);
 
       return signalEventDefinition;
+    }
+  }
+
+  protected void parseIntermediateCepEventDefinition(Element element, ActivityImpl cepActivity) {
+    cepActivity.setProperty("type", "intermediateCepCatch");
+
+    parseCepCatchEventDefinition(element, cepActivity, false);
+
+    //for (BpmnParseListener parseListener : parseListeners) {
+    //  parseListener.parseIntermediateSignalCatchEventDefinition(element, signalActivity);
+    //}
+  }
+
+  protected void parseCepCatchEventDefinition(Element element, ActivityImpl cepActivity, boolean isStartEvent) {
+    EventSubscriptionDeclaration cepDefinition = parseCepEventDefinition(element);
+    cepDefinition.setActivityId(cepActivity.getId());
+    cepDefinition.setStartEvent(isStartEvent);
+    addEventSubscriptionDeclaration(cepDefinition, cepActivity.getEventScope(), element);
+
+    EventSubscriptionJobDeclaration catchingAsyncDeclaration = new EventSubscriptionJobDeclaration(cepDefinition);
+    catchingAsyncDeclaration.setJobPriorityProvider((ParameterValueProvider) cepActivity.getProperty(PROPERTYNAME_JOB_PRIORITY));
+    catchingAsyncDeclaration.setActivity(cepActivity);
+    cepDefinition.setJobDeclaration(catchingAsyncDeclaration);
+    addEventSubscriptionJobDeclaration(catchingAsyncDeclaration, cepActivity, element);
+  }
+
+  protected EventSubscriptionDeclaration parseCepEventDefinition(Element cepEventDefinitionElement) {
+    String queryRef = cepEventDefinitionElement.attribute("queryRef");
+    if (queryRef == null) {
+      addError("cepEventDefinition does not have required property 'queryRef'", cepEventDefinitionElement);
+      return null;
+    } else {
+      CepQueryDefinition queryDefinition = cepQueries.get(resolveName(queryRef));
+      if (queryDefinition == null) {
+        addError("Could not find CEP query with id '" + queryRef + "'", cepEventDefinitionElement);
+      }
+      EventSubscriptionDeclaration cepEventDefinition = new EventSubscriptionDeclaration(queryDefinition.getName(), "cep");
+
+      boolean throwingAsync = "true".equals(cepEventDefinitionElement.attributeNS(CAMUNDA_BPMN_EXTENSIONS_NS, "async", "false"));
+      cepEventDefinition.setAsync(throwingAsync);
+
+      return cepEventDefinition;
     }
   }
 
