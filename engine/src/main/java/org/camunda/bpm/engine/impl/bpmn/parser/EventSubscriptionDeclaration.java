@@ -18,13 +18,11 @@ import java.util.Collections;
 import java.util.List;
 
 import org.camunda.bpm.engine.ProcessEngineException;
+import org.camunda.bpm.engine.impl.event.CepEventHandler;
 import org.camunda.bpm.engine.impl.event.MessageEventHandler;
 import org.camunda.bpm.engine.impl.event.SignalEventHandler;
 import org.camunda.bpm.engine.impl.jobexecutor.EventSubscriptionJobDeclaration;
-import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.MessageEventSubscriptionEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.SignalEventSubscriptionEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.*;
 import org.camunda.bpm.engine.impl.pvm.PvmScope;
 import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.runtime.LegacyBehavior;
@@ -118,8 +116,10 @@ public class EventSubscriptionDeclaration implements Serializable {
       eventSubscriptionEntity = new MessageEventSubscriptionEntity(execution);
     } else if (eventType.equals(SignalEventHandler.EVENT_HANDLER_TYPE)) {
       eventSubscriptionEntity = new SignalEventSubscriptionEntity(execution);
+    } else if (eventType.equals(CepEventHandler.EVENT_HANDLER_TYPE)) {
+      eventSubscriptionEntity = new CepEventSubscriptionEntity(execution);
     } else {
-      throw new ProcessEngineException("Found event definition of unknown type: " + eventType);
+      throw new ProcessEngineException("Found event of unknown type: " + eventType);
     }
 
     eventSubscriptionEntity.setEventName(eventName);

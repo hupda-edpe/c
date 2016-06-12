@@ -11,7 +11,9 @@
  * limitations under the License.
  */
 
-package org.camunda.bpm.engine.impl.bpmn.parser;
+package org.camunda.bpm.engine.impl.cep;
+
+import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 
 import java.io.Serializable;
 
@@ -24,24 +26,45 @@ public class CepQueryDefinition implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private String id;
+  //private String id;
   private String name;
+  private String code;
+
+  public CepQueryDefinition(String name) {
+    this.name = name;
+    code = null;
+  }
+
+  public CepQueryDefinition(ProcessDefinitionEntity processDefinition, String id, String code) {
+    name = processDefinition.getId() + "_" + id;
+    this.code = code;
+  }
 
 
-  public String getId() {
+  /*public String getId() {
     return id;
   }
 
   public void setId(String id) {
     this.id = id;
-  }
+  }*/
 
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void register() {
+    if (code != null) {
+      // TODO: create query
+    }
+    CepInterface.registerQuery(name, "");
+  }
+
+  public void unregister() {
+    if (code != null) {
+      // TODO: delete query
+    }
+    CepInterface.unregisterQuery(name);
   }
 
 }

@@ -22,6 +22,7 @@ import java.util.Set;
 import org.camunda.bpm.engine.delegate.Expression;
 import org.camunda.bpm.engine.impl.ProcessEngineLogger;
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParse;
+import org.camunda.bpm.engine.impl.cep.CepQueryDefinition;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.db.DbEntity;
@@ -65,6 +66,8 @@ public class ProcessDefinitionEntity extends ProcessDefinitionImpl implements Pr
   protected List<IdentityLinkEntity> definitionIdentityLinkEntities = new ArrayList<IdentityLinkEntity>();
   protected Set<Expression> candidateStarterUserIdExpressions = new HashSet<Expression>();
   protected Set<Expression> candidateStarterGroupIdExpressions = new HashSet<Expression>();
+
+  protected List<CepQueryDefinition> cepQueries = new ArrayList<CepQueryDefinition>();
 
   // firstVersion is true, when version == 1 or when
   // this definition does not have any previous definitions
@@ -407,6 +410,22 @@ public class ProcessDefinitionEntity extends ProcessDefinitionImpl implements Pr
 
   public void addCandidateStarterGroupIdExpression(Expression groupId) {
     candidateStarterGroupIdExpressions.add(groupId);
+  }
+
+  public void setCepQueries(List<CepQueryDefinition> cepQueries) {
+    this.cepQueries = cepQueries;
+  }
+
+  public void registerCepQueries() {
+    for (CepQueryDefinition cepQuery: cepQueries) {
+      cepQuery.register();
+    }
+  }
+
+  public void unregisterCepQueries() {
+    for (CepQueryDefinition cepQuery: cepQueries) {
+      cepQuery.unregister();
+    }
   }
 
 }

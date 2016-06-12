@@ -79,6 +79,7 @@ import org.camunda.bpm.engine.impl.bpmn.listener.ClassDelegateExecutionListener;
 import org.camunda.bpm.engine.impl.bpmn.listener.DelegateExpressionExecutionListener;
 import org.camunda.bpm.engine.impl.bpmn.listener.ExpressionExecutionListener;
 import org.camunda.bpm.engine.impl.bpmn.listener.ScriptExecutionListener;
+import org.camunda.bpm.engine.impl.cep.CepQueryDefinition;
 import org.camunda.bpm.engine.impl.core.model.BaseCallableElement;
 import org.camunda.bpm.engine.impl.core.model.BaseCallableElement.CallableElementBinding;
 import org.camunda.bpm.engine.impl.core.model.CallableElement;
@@ -319,7 +320,6 @@ public class BpmnParse extends Parse {
     parseImports();
     parseMessages();
     parseSignals();
-    parseCepQueries();
     parseErrors();
     parseEscalations();
     parseProcessDefinitions();
@@ -447,8 +447,11 @@ public class BpmnParse extends Parse {
   /**
    * Parses the CEP queries of the given definitions file.
    */
-  protected void parseCepQueries() {
-    Element extensionElements = rootElement.element("extensionElements");
+  protected void parseCepQueries(Element processElement, ProcessDefinitionEntity processDefinition) {
+    this.cepQueries.clear();
+    List<CepQueryDefinition> processCepQueries = new ArrayList<CepQueryDefinition>();
+
+    Element extensionElements = processElement.element("extensionElements");
     if (extensionElements == null) {
       return;
     }
@@ -456,24 +459,24 @@ public class BpmnParse extends Parse {
       String id = cepQueryElement.attribute("id");
       String queryName = cepQueryElement.attribute("name");
 
-      for (CepQueryDefinition cepQueryDefinition : cepQueries.values()) {
-        if (cepQueryDefinition.getName().equals(queryName)) {
-          addError("duplicate CEP query name '" + queryName + "'.", cepQueryElement);
-        }
-      }
-
       if (id == null) {
         addError("CEP query must have an id", cepQueryElement);
       } else if (queryName == null) {
-        addError("CEP query with id '" + id + "' has no name", cepQueryElement);
-
+        addError("Auto-generated CEP queries have not been implemented yet. Please specify a name.", cepQueryElement);
       } else {
-        CepQueryDefinition cepQuery = new CepQueryDefinition();
-        cepQuery.setId(this.targetNamespace + ":" + id);
-        cepQuery.setName(queryName);
-        this.cepQueries.put(cepQuery.getId(), cepQuery);
+        CepQueryDefinition cepQuery = new CepQueryDefinition(queryName);
+        this.cepQueries.put(this.targetNamespace + ":" + id, cepQuery);
+
+        for (CepQueryDefinition cepQueryDefinition : cepQueries.values()) {
+          if (cepQueryDefinition.getName().equals(cepQuery.getName())) {
+            addError("duplicate CEP query name '" + queryName + "'.", cepQueryElement);
+          }
+        }
+
+        processCepQueries.add(cepQuery);
       }
     }
+    processDefinition.setCepQueries(processCepQueries);
   }
 
   public void parseErrors() {
@@ -604,6 +607,8 @@ public class BpmnParse extends Parse {
     processDefinition.setProperty(PROPERTYNAME_JOB_PRIORITY, parseJobPriority(processElement));
 
     LOG.parsingElement("process", processDefinition.getKey());
+
+    parseCepQueries(processElement, processDefinition);
 
     parseScope(processElement, processDefinition);
 

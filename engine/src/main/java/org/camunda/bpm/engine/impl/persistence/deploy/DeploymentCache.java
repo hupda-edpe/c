@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.camunda.bpm.engine.ProcessEngineException;
 import org.camunda.bpm.engine.exception.cmmn.CaseDefinitionNotFoundException;
 import org.camunda.bpm.engine.exception.dmn.DecisionDefinitionNotFoundException;
 import org.camunda.bpm.engine.impl.ProcessDefinitionQueryImpl;
@@ -183,15 +184,22 @@ public class DeploymentCache {
   }
 
   public void addProcessDefinition(ProcessDefinitionEntity processDefinition) {
+    processDefinition.registerCepQueries();
     processDefinitionCache.put(processDefinition.getId(), processDefinition);
   }
 
   public void removeProcessDefinition(String processDefinitionId) {
+    if (processDefinitionCache.containsKey(processDefinitionId)) {
+      processDefinitionCache.get(processDefinitionId).unregisterCepQueries();
+    }
     processDefinitionCache.remove(processDefinitionId);
     bpmnModelInstanceCache.remove(processDefinitionId);
   }
 
   public void discardProcessDefinitionCache() {
+    for (ProcessDefinitionEntity processDefinition : processDefinitionCache.values()) {
+      processDefinition.unregisterCepQueries();
+    }
     processDefinitionCache.clear();
     bpmnModelInstanceCache.clear();
   }
