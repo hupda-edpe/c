@@ -79,6 +79,7 @@ public class TableDataManager extends AbstractManager {
     persistentObjectToTableNameMap.put(CompensateEventSubscriptionEntity.class, "ACT_RU_EVENT_SUBSCRIPTION");
     persistentObjectToTableNameMap.put(MessageEventSubscriptionEntity.class, "ACT_RU_EVENT_SUBSCRIPTION");
     persistentObjectToTableNameMap.put(SignalEventSubscriptionEntity.class, "ACT_RU_EVENT_SUBSCRIPTION");
+    persistentObjectToTableNameMap.put(CepEventSubscriptionEntity.class, "ACT_RU_EVENT_SUBSCRIPTION");
 
     persistentObjectToTableNameMap.put(FilterEntity.class, "ACT_RU_FILTER");
 

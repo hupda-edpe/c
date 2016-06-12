@@ -465,7 +465,6 @@ public class BpmnParse extends Parse {
         addError("Auto-generated CEP queries have not been implemented yet. Please specify a name.", cepQueryElement);
       } else {
         CepQueryDefinition cepQuery = new CepQueryDefinition(queryName);
-        this.cepQueries.put(this.targetNamespace + ":" + id, cepQuery);
 
         for (CepQueryDefinition cepQueryDefinition : cepQueries.values()) {
           if (cepQueryDefinition.getName().equals(cepQuery.getName())) {
@@ -473,6 +472,7 @@ public class BpmnParse extends Parse {
           }
         }
 
+        this.cepQueries.put(this.targetNamespace + ":" + id, cepQuery);
         processCepQueries.add(cepQuery);
       }
     }

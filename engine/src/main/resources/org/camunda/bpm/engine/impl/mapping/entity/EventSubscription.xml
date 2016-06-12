@@ -33,12 +33,14 @@
     <discriminator javaType="string" column="EVENT_TYPE_">
       <case value="message" resultMap="messageResultMap"/>
       <case value="signal" resultMap="signalResultMap"/>
+      <case value="cep" resultMap="signalResultMap"/>
       <case value="compensate" resultMap="compensateResultMap"/>
     </discriminator>
   </resultMap>
 
   <resultMap id="messageResultMap" type="org.camunda.bpm.engine.impl.persistence.entity.MessageEventSubscriptionEntity" extends="eventSubscriptionResultMap"/>
   <resultMap id="signalResultMap" type="org.camunda.bpm.engine.impl.persistence.entity.SignalEventSubscriptionEntity" extends="eventSubscriptionResultMap"/>
+  <resultMap id="cepResultMap" type="org.camunda.bpm.engine.impl.persistence.entity.CepEventSubscriptionEntity" extends="eventSubscriptionResultMap"/>
   <resultMap id="compensateResultMap" type="org.camunda.bpm.engine.impl.persistence.entity.CompensateEventSubscriptionEntity" extends="eventSubscriptionResultMap"/>
 
   <!-- SELECT -->
@@ -107,15 +109,15 @@
       and (EVT.EXECUTION_ID_ is null or EXC.SUSPENSION_STATE_ = 1)
   </select>
 
-  <select id="selectCepEventSubscriptionsByEventName" resultMap="eventSubscriptionResultMap" parameterType="org.camunda.bpm.engine.impl.db.ListQueryParameterObject">
+  <select id="selectCepEventSubscriptionsByQueryName" resultMap="eventSubscriptionResultMap" parameterType="org.camunda.bpm.engine.impl.db.ListQueryParameterObject">
     select EVT.*
     from ${prefix}ACT_RU_EVENT_SUBSCR EVT
     left join ${prefix}ACT_RU_EXECUTION EXC on EVT.EXECUTION_ID_ = EXC.ID_
-    where (EVENT_TYPE_ = 'signal')
+    where (EVENT_TYPE_ = 'cep')
     and (EVENT_NAME_ = #{parameter})
     and (EVT.EXECUTION_ID_ is null or EXC.SUSPENSION_STATE_ = 1)
   </select>
-    
+
   <select id="selectSignalEventSubscriptionsByExecution" resultMap="eventSubscriptionResultMap" parameterType="org.camunda.bpm.engine.impl.db.ListQueryParameterObject">
     select *
     from ${prefix}ACT_RU_EVENT_SUBSCR

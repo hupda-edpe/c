@@ -35,11 +35,14 @@ public class EventSubscriptionManager extends AbstractManager {
 
   /** keep track of subscriptions created in the current command */
   protected List<SignalEventSubscriptionEntity> createdSignalSubscriptions = new ArrayList<SignalEventSubscriptionEntity>();
+  protected List<CepEventSubscriptionEntity> createdCepSubscriptions = new ArrayList<CepEventSubscriptionEntity>();
 
   public void insert(EventSubscriptionEntity persistentObject) {
     super.insert(persistentObject);
     if(persistentObject instanceof SignalEventSubscriptionEntity) {
       createdSignalSubscriptions.add((SignalEventSubscriptionEntity)persistentObject);
+    } else if (persistentObject instanceof CepEventSubscriptionEntity) {
+      createdCepSubscriptions.add((CepEventSubscriptionEntity) persistentObject);
     }
   }
 
@@ -47,6 +50,8 @@ public class EventSubscriptionManager extends AbstractManager {
     getDbEntityManager().delete(persistentObject);
     if(persistentObject instanceof SignalEventSubscriptionEntity) {
       createdSignalSubscriptions.remove(persistentObject);
+    } else if(persistentObject instanceof CepEventSubscriptionEntity) {
+      createdCepSubscriptions.remove(persistentObject);
     }
 
     // if the event subscription has been triggered asynchronously but not yet executed
@@ -89,6 +94,21 @@ public class EventSubscriptionManager extends AbstractManager {
     }
 
     return new ArrayList<SignalEventSubscriptionEntity>(selectList);
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<CepEventSubscriptionEntity> findCepEventSubscriptionsByQueryName(String queryName) {
+    final String query = "selectCepEventSubscriptionsByQueryName";
+    Set<CepEventSubscriptionEntity> selectList = new HashSet<CepEventSubscriptionEntity>( getDbEntityManager().selectList(query, queryName));
+
+    // add events created in this command (not visible yet in query)
+    for (CepEventSubscriptionEntity entity : createdCepSubscriptions) {
+      if(queryName.equals(entity.getEventName())) {
+        selectList.add(entity);
+      }
+    }
+
+    return new ArrayList<CepEventSubscriptionEntity>(selectList);
   }
 
   @SuppressWarnings("unchecked")

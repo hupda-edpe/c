@@ -26,6 +26,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.JobEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEventSubscriptionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.SignalEventSubscriptionEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.CepEventSubscriptionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.TimerEntity;
 import org.camunda.bpm.engine.runtime.EventSubscription;
 
@@ -69,6 +70,7 @@ public class DbEntityCacheKeyMapping {
     mapping.registerEntityCacheKey(CompensateEventSubscriptionEntity.class, EventSubscription.class);
     mapping.registerEntityCacheKey(MessageEventSubscriptionEntity.class, EventSubscription.class);
     mapping.registerEntityCacheKey(SignalEventSubscriptionEntity.class, EventSubscription.class);
+    mapping.registerEntityCacheKey(CepEventSubscriptionEntity.class, EventSubscription.class);
 
     // subclasses of HistoricDetailEventEntity
     mapping.registerEntityCacheKey(HistoricFormPropertyEntity.class, HistoricDetailEventEntity.class);
