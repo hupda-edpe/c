@@ -45,10 +45,13 @@ public class CepInterface {
         // TODO: Fix blocking waiting.
         Client client = ClientBuilder.newClient();
         WebTarget target = client.target(unicorn_url + eventQueryApi);
+        ProcessEngineLogger.INSTANCE.processEngineCreated("Will send query " + queryName);
+
         Response response = target.request()
                 .post(javax.ws.rs.client.Entity.json(queryJSON));
         String uuid = response.getEntity().toString();
         queryNamesByUuid.put(uuid, queryName);
+        ProcessEngineLogger.INSTANCE.processEngineCreated("Registered query " + queryName);
     }
 
     public static void unregisterQuery(String queryName) {

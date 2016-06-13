@@ -128,12 +128,17 @@ public class DefaultProcessEngineRestServiceImpl extends AbstractProcessEngineRe
     return super.getDecisionDefinitionRestService(null);
   }
 
-  @Path(ExternalTaskRestService.PATH)
-  public ExternalTaskRestService getExternalTaskRestService() {
-    return super.getExternalTaskRestService(null);
-  }
+    @Path(ExternalTaskRestService.PATH)
+    public ExternalTaskRestService getExternalTaskRestService() {
+        return super.getExternalTaskRestService(null);
+    }
 
-  @Override
+    @Path(CepEventService.PATH)
+    public CepEventService getCepEventRestService() {
+        return super.getCepEventService(null);
+    }
+
+    @Override
   protected URI getRelativeEngineUri(String engineName) {
     // the default engine
     return URI.create("/");
