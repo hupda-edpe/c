@@ -12,15 +12,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.camunda.bpm.engine.impl.cep.CepInterface;
-import org.camunda.bpm.engine.rest.CepEventService;
+import org.camunda.bpm.engine.rest.CepEventRestService;
 
 // import org.camunda.bpm.engine.impl.cep.CepInterface;
 
-public class CepEventServiceImpl extends AbstractRestProcessEngineAware implements CepEventService {
-    public CepEventServiceImpl(String engineName, ObjectMapper objectMapper) {
+public class CepEventRestServiceImpl extends AbstractRestProcessEngineAware implements CepEventRestService {
+    public CepEventRestServiceImpl(String engineName, ObjectMapper objectMapper) {
         super(engineName, objectMapper);
     }
 
+    @Override
     public Response receiveEvent(String queryName, String data) {
         ProcessEngineLogger.INSTANCE.processEngineCreated("Receiving event " + data + ".");
 
@@ -31,11 +32,13 @@ public class CepEventServiceImpl extends AbstractRestProcessEngineAware implemen
         return Response.status(201).entity("Well done!").build();
     }
 
-    public Response getWelcome()
+    @Override
+    public String getWelcome()
     {
         ProcessEngineLogger.INSTANCE.processEngineCreated("Sending Welcome Message!");
         CepInterface.receiveEventMatch("myQuery");
 
-        return Response.status(200).entity("Welcome!").build();
+        return "Welcome!";
+        // return Response.status(200).entity("Welcome!").build();
     }
 }

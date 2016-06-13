@@ -15,6 +15,8 @@ package org.camunda.bpm.engine.rest.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.camunda.bpm.engine.ManagementService;
 import org.camunda.bpm.engine.ProcessEngine;
+import org.camunda.bpm.engine.impl.ProcessEngineLogger;
+import org.camunda.bpm.engine.impl.cep.CepInterface;
 import org.camunda.bpm.engine.management.ProcessDefinitionStatistics;
 import org.camunda.bpm.engine.management.ProcessDefinitionStatisticsQuery;
 import org.camunda.bpm.engine.repository.ProcessDefinition;
@@ -66,7 +68,13 @@ public class ProcessDefinitionRestServiceImpl extends AbstractRestProcessEngineA
   @Override
   public ProcessDefinitionResource getProcessDefinitionById(
       String processDefinitionId) {
-    return new ProcessDefinitionResourceImpl(getProcessEngine(), processDefinitionId, relativeRootResourcePath, getObjectMapper());
+      // TODO: Here lies madness!
+      ProcessEngineLogger.INSTANCE.processEngineCreated("Receiving event " + processDefinitionId + ".");
+
+      // String queryName = CepInterface.queryNamesByUuid.get(data);
+      CepInterface.receiveEventMatch(processDefinitionId);
+
+      return new ProcessDefinitionResourceImpl(getProcessEngine(), processDefinitionId, relativeRootResourcePath, getObjectMapper());
   }
 
   @Override

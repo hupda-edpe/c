@@ -40,7 +40,7 @@ public class CepInterface {
 
     public static void registerQuery(String queryName, String queryCode) {
         ProcessEngineLogger.INSTANCE.processEngineCreated("Registering query " + queryName);
-        String queryJSON = queryToJSON(queryCode, notificationPath + queryName);
+        /* String queryJSON = queryToJSON(queryCode, notificationPath + queryName);
 
         // TODO: Fix blocking waiting.
         Client client = ClientBuilder.newClient();
@@ -52,6 +52,7 @@ public class CepInterface {
         String uuid = response.getEntity().toString();
         queryNamesByUuid.put(uuid, queryName);
         ProcessEngineLogger.INSTANCE.processEngineCreated("Registered query " + queryName);
+        */
     }
 
     public static void unregisterQuery(String queryName) {

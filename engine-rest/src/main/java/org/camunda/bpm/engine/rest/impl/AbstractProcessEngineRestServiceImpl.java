@@ -195,9 +195,9 @@ public abstract class AbstractProcessEngineRestServiceImpl {
     return subResource;
   }
 
-    public CepEventService getCepEventService(String engineName) {
+    public CepEventRestService getCepEventRestService(String engineName) {
         String rootResourcePath = getRelativeEngineUri(engineName).toASCIIString();
-        CepEventServiceImpl subResource = new CepEventServiceImpl(engineName, getObjectMapper());
+        CepEventRestServiceImpl subResource = new CepEventRestServiceImpl(engineName, getObjectMapper());
         subResource.setRelativeRootResourceUri(rootResourcePath);
         return subResource;
     }

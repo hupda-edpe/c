@@ -133,9 +133,9 @@ public class DefaultProcessEngineRestServiceImpl extends AbstractProcessEngineRe
         return super.getExternalTaskRestService(null);
     }
 
-    @Path(CepEventService.PATH)
-    public CepEventService getCepEventRestService() {
-        return super.getCepEventService(null);
+    @Path(CepEventRestService.PATH)
+    public CepEventRestService getCepEventRestService() {
+        return super.getCepEventRestService(null);
     }
 
     @Override

@@ -165,9 +165,9 @@ public class NamedProcessEngineRestServiceImpl extends AbstractProcessEngineRest
     return super.getExternalTaskRestService(engineName);
   }
 
-    @Path("/{name}" + CepEventService.PATH)
-    public CepEventService getCepEventService(@PathParam("name") String engineName) {
-        return super.getCepEventService(engineName);
+    @Path("/{name}" + CepEventRestService.PATH)
+    public CepEventRestService getCepEventService(@PathParam("name") String engineName) {
+        return super.getCepEventRestService(engineName);
     }
 
   @GET
