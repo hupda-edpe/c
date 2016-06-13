@@ -6,10 +6,7 @@ package org.camunda.bpm.engine.impl.cep;
 
 import org.camunda.bpm.engine.impl.ProcessEngineLogger;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 // import org.camunda.bpm.engine.impl.cep.CepInterface;
@@ -18,15 +15,25 @@ import javax.ws.rs.core.Response;
 public class CepService {
 
     @POST
-    @Path("/REST")
+    @Path("/REST/{queryName}")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response receiveEvent(String data) {
+    public Response receiveEvent(@PathParam("eventName") String queryName, String data) {
         ProcessEngineLogger.INSTANCE.processEngineCreated("Receiving event " + data + ".");
 
-        String queryName = CepInterface.queryNamesByUuid.get(data);
+        // String queryName = CepInterface.queryNamesByUuid.get(data);
         CepInterface.receiveEventMatch(queryName);
 
         // Transmit Garbage Answer to prevent deletion of query.
         return Response.status(201).entity("Well done!").build();
+    }
+
+    @GET
+    @Path("/welcome")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response getWelcome()
+    {
+        ProcessEngineLogger.INSTANCE.processEngineCreated("Sending Welcome Message!");
+
+        return Response.status(200).entity("Welcome!").build();
     }
 }
