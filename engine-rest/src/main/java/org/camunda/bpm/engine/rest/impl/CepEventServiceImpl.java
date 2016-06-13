@@ -34,6 +34,7 @@ public class CepEventServiceImpl extends AbstractRestProcessEngineAware implemen
     public Response getWelcome()
     {
         ProcessEngineLogger.INSTANCE.processEngineCreated("Sending Welcome Message!");
+        CepInterface.receiveEventMatch("myQuery");
 
         return Response.status(200).entity("Welcome!").build();
     }
