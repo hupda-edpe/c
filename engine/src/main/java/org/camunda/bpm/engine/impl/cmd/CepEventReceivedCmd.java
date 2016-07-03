@@ -1,6 +1,5 @@
 package org.camunda.bpm.engine.impl.cmd;
 
-import org.camunda.bpm.engine.impl.ProcessEngineLogger;
 import org.camunda.bpm.engine.impl.cep.CepInterface;
 import org.camunda.bpm.engine.impl.interceptor.Command;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;

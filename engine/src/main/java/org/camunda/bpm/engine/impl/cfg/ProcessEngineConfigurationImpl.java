@@ -111,6 +111,7 @@ import org.camunda.bpm.engine.impl.dmn.entity.repository.DecisionDefinitionManag
 import org.camunda.bpm.engine.impl.el.CommandContextFunctionMapper;
 import org.camunda.bpm.engine.impl.el.DateTimeFunctionMapper;
 import org.camunda.bpm.engine.impl.el.ExpressionManager;
+import org.camunda.bpm.engine.impl.event.CepEventHandler;
 import org.camunda.bpm.engine.impl.event.CompensationEventHandler;
 import org.camunda.bpm.engine.impl.event.EventHandler;
 import org.camunda.bpm.engine.impl.event.MessageEventHandler;
@@ -1493,6 +1494,8 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
       MessageEventHandler messageEventHandler = new MessageEventHandler();
       eventHandlers.put(messageEventHandler.getEventHandlerType(), messageEventHandler);
 
+      CepEventHandler cepEventHandler = new CepEventHandler();
+      eventHandlers.put(cepEventHandler.getEventHandlerType(), cepEventHandler);
     }
     if(customEventHandlers != null) {
       for (EventHandler eventHandler : customEventHandlers) {

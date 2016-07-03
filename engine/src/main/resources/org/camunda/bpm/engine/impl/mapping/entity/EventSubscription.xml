@@ -10,6 +10,10 @@
     delete from ${prefix}ACT_RU_EVENT_SUBSCR where ID_ = #{id} and REV_ = #{revision}
   </delete>
 
+  <delete id="deleteCepEventSubscription" parameterType="org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionEntity">
+    delete from ${prefix}ACT_RU_EVENT_SUBSCR where ID_ = #{id} and REV_ = #{revision}
+  </delete>
+
   <delete id="deleteCompensateEventSubscription" parameterType="org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionEntity">
     delete from ${prefix}ACT_RU_EVENT_SUBSCR where ID_ = #{id} and REV_ = #{revision}
   </delete>
@@ -33,7 +37,7 @@
     <discriminator javaType="string" column="EVENT_TYPE_">
       <case value="message" resultMap="messageResultMap"/>
       <case value="signal" resultMap="signalResultMap"/>
-      <case value="cep" resultMap="signalResultMap"/>
+      <case value="cep" resultMap="cepResultMap"/>
       <case value="compensate" resultMap="compensateResultMap"/>
     </discriminator>
   </resultMap>
