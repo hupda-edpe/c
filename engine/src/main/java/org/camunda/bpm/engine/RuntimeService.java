@@ -1655,4 +1655,6 @@ public interface RuntimeService {
    * @return the created process instance
    */
   ProcessInstantiationBuilder createProcessInstanceByKey(String processDefinitionKey);
+
+  void cepEventReceived(String name);
 }

@@ -23,6 +23,7 @@ import java.util.Map;
 import org.camunda.bpm.engine.RuntimeService;
 import org.camunda.bpm.engine.form.FormData;
 import org.camunda.bpm.engine.impl.cmd.ActivateProcessInstanceCmd;
+import org.camunda.bpm.engine.impl.cmd.CepEventReceivedCmd;
 import org.camunda.bpm.engine.impl.cmd.CorrelateMessageCmd;
 import org.camunda.bpm.engine.impl.cmd.DeleteProcessInstanceCmd;
 import org.camunda.bpm.engine.impl.cmd.FindActiveActivityIdsCmd;
@@ -366,6 +367,10 @@ public class RuntimeServiceImpl extends ServiceImpl implements RuntimeService {
   public void messageEventReceived(String messageName, String executionId, Map<String, Object> processVariables) {
     ensureNotNull("messageName", messageName);
     commandExecutor.execute(new MessageEventReceivedCmd(messageName, executionId, processVariables));
+  }
+
+  public void cepEventReceived(String name) {
+    commandExecutor.execute(new CepEventReceivedCmd(name));
   }
 
   public MessageCorrelationBuilder createMessageCorrelation(String messageName) {

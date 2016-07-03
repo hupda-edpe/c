@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.Response;
 import org.camunda.bpm.engine.impl.context.Context;
+import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionManager;
 import org.camunda.bpm.engine.impl.persistence.entity.CepEventSubscriptionEntity;
 
@@ -24,7 +25,7 @@ import java.util.Map;
 public class CepInterface {
     public static String notificationPath = "";
     public static String eventPostApi = "/event/REST/";
-    public static String unicorn_url = "http://heinrich5991.de/Unicorn/REST";
+    public static String unicorn_url = "http://172.18.0.3:8080/Unicorn/REST";
     public static String eventQueryApi = "/EventQuery/REST/";
     public static Map<String, String> queryNamesByUuid;
     public static void initialize()
@@ -59,17 +60,20 @@ public class CepInterface {
         ProcessEngineLogger.INSTANCE.processEngineCreated("Unregistering query " + queryName + ". NOT IMPLEMENTED.");
     }
 
-  public static void receiveEventMatch(String queryName) {
-    final EventSubscriptionManager eventSubscriptionManager = Context.getCommandContext().getEventSubscriptionManager();
-
-    // trigger all event subscriptions for the signal (start and intermediate)
-    List<CepEventSubscriptionEntity> catchCepEventSubscriptions = eventSubscriptionManager
-        .findCepEventSubscriptionsByQueryName(queryName);
-    for (CepEventSubscriptionEntity cepEventSubscriptionEntity : catchCepEventSubscriptions) {
-      // TODO: check whether the subscription entity is active; implement async
-      cepEventSubscriptionEntity.eventReceived(null, false);
+    public static void receiveEventMatch(String queryName) {
+        CommandContext context = Context.getCommandContext();
+        if (context == null) {
+            throw new RuntimeException("context is null");
+        }
+        final EventSubscriptionManager eventSubscriptionManager = Context.getCommandContext().getEventSubscriptionManager();
+        // trigger all event subscriptions for the signal (start and intermediate)
+        List<CepEventSubscriptionEntity> catchCepEventSubscriptions = eventSubscriptionManager
+                .findCepEventSubscriptionsByQueryName(queryName);
+        for (CepEventSubscriptionEntity cepEventSubscriptionEntity : catchCepEventSubscriptions) {
+            // TODO: check whether the subscription entity is active; implement async
+            cepEventSubscriptionEntity.eventReceived(null, false);
+        }
     }
-  }
 
     public static void sendEvent() {
         ProcessEngineLogger.INSTANCE.processEngineCreated("Creating event. NOT IMPLEMENTED.");

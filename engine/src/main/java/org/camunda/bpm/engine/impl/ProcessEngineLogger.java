@@ -12,13 +12,12 @@
  */
 package org.camunda.bpm.engine.impl;
 
-import java.net.URL;
-
 import org.camunda.bpm.application.impl.ProcessApplicationLogger;
 import org.camunda.bpm.container.impl.ContainerIntegrationLogger;
 import org.camunda.bpm.engine.impl.bpmn.behavior.BpmnBehaviorLogger;
 import org.camunda.bpm.engine.impl.bpmn.diagram.DiagramCanvasLogger;
 import org.camunda.bpm.engine.impl.bpmn.parser.BpmnParseLogger;
+import org.camunda.bpm.engine.impl.cep.CepLogger;
 import org.camunda.bpm.engine.impl.cfg.ConfigurationLogger;
 import org.camunda.bpm.engine.impl.cfg.TransactionLogger;
 import org.camunda.bpm.engine.impl.cmd.CommandLogger;
@@ -37,6 +36,8 @@ import org.camunda.bpm.engine.impl.scripting.ScriptLogger;
 import org.camunda.bpm.engine.impl.test.TestLogger;
 import org.camunda.bpm.engine.impl.util.EngineUtilLogger;
 import org.camunda.commons.logging.BaseLogger;
+
+import java.net.URL;
 
 /**
  * @author Stefan Hentschel.
@@ -113,6 +114,9 @@ public class ProcessEngineLogger extends BaseLogger {
 
   public static final DecisionLogger DECISION_LOGGER = BaseLogger.createLogger(
       DecisionLogger.class, PROJECT_CODE, "org.camunda.bpm.engine.dmn", "22");
+
+  public static final CepLogger CEP_LOGGER = BaseLogger.createLogger(
+      CepLogger.class, PROJECT_CODE, "org.camunda.bpm.engine.cep", "23");
 
   public void processEngineCreated(String name) {
     logInfo("001", "Process Engine {} created.", name);
