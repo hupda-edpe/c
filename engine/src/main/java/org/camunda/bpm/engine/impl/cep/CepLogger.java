@@ -12,4 +12,13 @@ public class CepLogger extends ProcessEngineLogger {
   public void welcome() {
     logInfo("003", "Welcome sent");
   }
+  public void registeringQuery(String name) {
+    logInfo("004", "Registering query {}", name);
+  }
+  public void unregisteringQuery(String name) {
+    logInfo("005", "Unregistering query {}, NOT IMPLEMENTED", name);
+  }
+  public void creatingEvent() {
+    logInfo("006", "Creating event, NOT IMPLEMENTED");
+  }
 }
