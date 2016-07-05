@@ -2,7 +2,11 @@ package org.camunda.bpm.engine.impl.cep;
 
 import org.camunda.bpm.engine.ProcessEngineException;
 import org.camunda.bpm.engine.impl.ProcessEngineLogger;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.Response;
@@ -23,13 +27,13 @@ import java.util.Map;
 
 
 public class CepInterface {
-  public static String notificationPath = "";
+  public static String notificationPath = "http://172.18.0.1:8008";
   public static String eventPostApi = "/event/REST/";
-  public static String unicorn_url = "http://172.18.0.3:8080/Unicorn/REST";
+  //public static String unicornUrl = "http://172.18.0.3:8080/Unicorn/REST";
+  public static String unicornUrl = "http://127.0.0.1:8008/Unicorn/REST";
   public static String eventQueryApi = "/EventQuery/REST/";
   public static Map<String, String> queryNamesByUuid;
-  public static void initialize()
-  {
+  public static void initialize() {
     try {
       InetAddress IP = InetAddress.getLocalHost();
       notificationPath = IP.getHostAddress() + eventPostApi;
@@ -41,19 +45,24 @@ public class CepInterface {
 
   public static void registerQuery(String queryName, String queryCode) {
     ProcessEngineLogger.CEP_LOGGER.registeringQuery(queryName);
-    /* String queryJSON = queryToJSON(queryCode, notificationPath + queryName);
 
-    // TODO: Fix blocking waiting.
-    Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(unicorn_url + eventQueryApi);
-    ProcessEngineLogger.INSTANCE.processEngineCreated("Will send query " + queryName);
+    String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
 
-    Response response = target.request()
-            .post(javax.ws.rs.client.Entity.json(queryJSON));
-    String uuid = response.getEntity().toString();
-    queryNamesByUuid.put(uuid, queryName);
-    ProcessEngineLogger.INSTANCE.processEngineCreated("Registered query " + queryName);
+    /*
+    try {
+      Socket socket = new Socket("localhost", 8008);
+      DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+      out.write((queryJSON + "\n").getBytes("UTF-8"));
+      out.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     */
+
+    Response response = ClientBuilder.newClient().target(unicornUrl + "/EventQuery/REST").request().post(Entity.json(queryJSON));
+    if (response.getStatus() != 200) {
+      ProcessEngineLogger.CEP_LOGGER.registerQueryFailed(queryName, queryCode, response.getStatus());
+    }
   }
 
   public static void unregisterQuery(String queryName) {
@@ -78,6 +87,7 @@ public class CepInterface {
 
   // The following is taken from Unicorn Source.
   public static String queryToJSON(String queryString, String notificationPath) {
+    //return "{\"queryString\"=\"" + queryString + "\",\"notificationPath\"=\"" + notificationPath + "\"}";
     EventQueryJsonForRest json = new EventQueryJsonForRest();
     json.setQueryString(queryString);
     json.setNotificationPath(notificationPath);
