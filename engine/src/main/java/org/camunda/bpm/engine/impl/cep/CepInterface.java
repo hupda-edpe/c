@@ -1,19 +1,18 @@
 package org.camunda.bpm.engine.impl.cep;
 
-import org.camunda.bpm.engine.ProcessEngineException;
-import org.camunda.bpm.engine.impl.ProcessEngineLogger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import javax.ws.rs.client.*;
-import javax.ws.rs.core.Response;
-import org.camunda.bpm.engine.impl.context.Context;
-import org.camunda.bpm.engine.impl.interceptor.CommandContext;
-import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionManager;
-import org.camunda.bpm.engine.impl.persistence.entity.CepEventSubscriptionEntity;
-
-import java.util.List;
-
 import com.google.gson.Gson;
+import org.camunda.bpm.engine.impl.ProcessEngineLogger;
+import org.camunda.bpm.engine.impl.context.Context;
+import org.camunda.bpm.engine.impl.persistence.entity.CepEventSubscriptionEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionManager;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.URLEncoder;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
@@ -23,13 +22,13 @@ import java.util.Map;
 
 
 public class CepInterface {
-  public static String notificationPath = "";
+  public static String notificationPath = "http://172.18.0.1:8008";
   public static String eventPostApi = "/event/REST/";
-  public static String unicorn_url = "http://172.18.0.3:8080/Unicorn/REST";
+  //public static String unicornUrl = "http://172.18.0.3:8080/Unicorn/REST";
+  public static String unicornUrl = "http://127.0.0.1:8008/Unicorn/REST";
   public static String eventQueryApi = "/EventQuery/REST/";
   public static Map<String, String> queryNamesByUuid;
-  public static void initialize()
-  {
+  public static void initialize() {
     try {
       InetAddress IP = InetAddress.getLocalHost();
       notificationPath = IP.getHostAddress() + eventPostApi;
@@ -39,25 +38,38 @@ public class CepInterface {
 
   }
 
+  private static void unicorn(String method, String path, String data) {
+    try {
+      Socket socket = new Socket("localhost", 8008);
+      DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+      out.write((method + " " + path + " HTTP/1.1\r\nHostname: 127.0.0.1\r\n\r\n" + data + "\r\n").getBytes("UTF-8"));
+      out.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static void registerQuery(String queryName, String queryCode) {
     ProcessEngineLogger.CEP_LOGGER.registeringQuery(queryName);
-    /* String queryJSON = queryToJSON(queryCode, notificationPath + queryName);
 
-    // TODO: Fix blocking waiting.
-    Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(unicorn_url + eventQueryApi);
-    ProcessEngineLogger.INSTANCE.processEngineCreated("Will send query " + queryName);
+    String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
 
-    Response response = target.request()
-            .post(javax.ws.rs.client.Entity.json(queryJSON));
-    String uuid = response.getEntity().toString();
-    queryNamesByUuid.put(uuid, queryName);
-    ProcessEngineLogger.INSTANCE.processEngineCreated("Registered query " + queryName);
-    */
+    try {
+      unicorn("POST", "/Unicorn/REST/EventQuery/REST/", "queryJson=" + URLEncoder.encode(queryJSON, "UTF-8"));
+    } catch(UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
+    }
+
+    /*Response response = ClientBuilder.newClient().target(unicornUrl + "/EventQuery/REST").request().post(Entity.json(queryJSON));
+    if (response.getStatus() != 200) {
+      ProcessEngineLogger.CEP_LOGGER.registerQueryFailed(queryName, queryCode, response.getStatus());
+    }*/
   }
 
   public static void unregisterQuery(String queryName) {
     ProcessEngineLogger.CEP_LOGGER.unregisteringQuery(queryName);
+
+    unicorn("DELETE", "/Unicorn/REST/EventQuery/REST/" + queryName, "");
   }
 
   public static void receiveEventMatch(String queryName) {

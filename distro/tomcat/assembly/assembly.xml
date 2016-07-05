@@ -50,6 +50,9 @@
 
         <include>org.freemarker:*:jar</include>
         <include>org.camunda.template-engines:*:jar</include>
+
+        <include>com.google.code.gson:*:jar</include>
+
       </includes>
     </dependencySet>
 
@@ -81,6 +84,9 @@
 
         <include>org.freemarker:*:jar</include>
         <include>org.camunda.template-engines:*:jar</include>
+
+        <include>com.google.code.gson:*:jar</include>
+
       </includes>
     </dependencySet>
   </dependencySets>
