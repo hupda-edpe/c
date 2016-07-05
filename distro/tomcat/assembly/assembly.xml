@@ -55,8 +55,8 @@
         <include>org.jboss.resteasy:*:jar</include>
         <include>javax.ws.rs:*:jar</include>
         <include>javax.inject:*:jar</include>
-        <include>org.glassfish.jersey.core:*:jar</include>
-        <include>org.glassfish.jersey.bundles.repackaged:*:jar</include>
+        <!--<include>org.glassfish.jersey.core:*:jar</include>
+        <include>org.glassfish.jersey.bundles.repackaged:*:jar</include>-->
         <include>org.glassfish.hk2:*:jar</include>
 
       </includes>
@@ -95,8 +95,8 @@
         <include>org.jboss.resteasy:*:jar</include>
         <include>javax.ws.rs:*:jar</include>
         <include>javax.inject:*:jar</include>
-        <include>org.glassfish.jersey.core:*:jar</include>
-        <include>org.glassfish.jersey.bundles.repackaged:*:jar</include>
+        <!--<include>org.glassfish.jersey.core:*:jar</include>
+        <include>org.glassfish.jersey.bundles.repackaged:*:jar</include>-->
         <include>org.glassfish.hk2:*:jar</include>
 
       </includes>
