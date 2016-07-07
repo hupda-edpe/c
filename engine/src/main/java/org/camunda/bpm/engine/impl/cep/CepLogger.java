@@ -7,7 +7,7 @@ public class CepLogger extends ProcessEngineLogger {
     logInfo("001", "Received event {}", name);
   }
   public void debug(String string) {
-    logInfo("002", string);
+    logInfo("002", "{}", string);
   }
   public void welcome() {
     logInfo("003", "Welcome sent");

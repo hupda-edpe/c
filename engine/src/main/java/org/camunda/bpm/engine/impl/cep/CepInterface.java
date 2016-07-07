@@ -16,6 +16,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Created by lucas on 6/12/16.
@@ -47,7 +48,7 @@ public class CepInterface {
       if (read <= 0) {
         break;
       } else {
-        result.append(Arrays.copyOfRange(buffer, 0, read).toString());
+        result.append(new String(Arrays.copyOfRange(buffer, 0, read), "UTF-8"));
       }
     }
     return result.toString();
@@ -74,7 +75,12 @@ public class CepInterface {
       ).getBytes("UTF-8"));
 
       DataInputStream in = new DataInputStream(socket.getInputStream());
-      ProcessEngineLogger.CEP_LOGGER.debug(readToEnd(in));
+
+      String result = readToEnd(in);
+      Scanner scanner = new Scanner(result);
+      while(scanner.hasNextLine()) {
+        ProcessEngineLogger.CEP_LOGGER.debug(scanner.nextLine());
+      }
 
       in.close();
       out.close();
