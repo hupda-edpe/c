@@ -81,6 +81,8 @@ public class CepInterface {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+
+    return "";
   }
 
   public static void registerQuery(String queryName, String queryCode) {
