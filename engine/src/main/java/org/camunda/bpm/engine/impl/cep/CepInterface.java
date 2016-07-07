@@ -6,13 +6,14 @@ import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.persistence.entity.CepEventSubscriptionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionManager;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -38,11 +39,44 @@ public class CepInterface {
 
   }
 
-  private static void unicorn(String method, String path, String data) {
+  private static String readToEnd(InputStream in) throws IOException {
+    byte buffer[] = new byte[2048];
+    StringBuilder result = new StringBuilder();
+    while (true) {
+      int read = in.read(buffer);
+      if (read <= 0) {
+        break;
+      } else {
+        result.append(Arrays.copyOfRange(buffer, 0, read).toString());
+      }
+    }
+    return result.toString();
+  }
+
+  private static String unicorn(String method, String path, String data) {
     try {
-      Socket socket = new Socket("localhost", 8008);
+      String restPath = "/Unicorn/webapi/REST/" + path;
+      String sendData = "";
+      if (!data.equals("")) {
+        sendData = data + "\r\n";
+      }
+      Socket socket = new Socket("172.18.0.3", 8080);
       DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-      out.write((method + " " + path + " HTTP/1.1\r\nHostname: 127.0.0.1\r\n\r\n" + data + "\r\n").getBytes("UTF-8"));
+      out.write((
+          method + " " + restPath + " HTTP/1.1\r\n" +
+          "User-Agent: camunda\r\n" +
+          "Host: localhost\r\n" +
+          "Connection: close\r\n" +
+          "Content-Type: application/json\r\n" +
+          "Content-Length: " + sendData.getBytes("UTF-8").length + "\r\n" +
+          "\r\n"
+          + sendData
+      ).getBytes("UTF-8"));
+
+      DataInputStream in = new DataInputStream(socket.getInputStream());
+      ProcessEngineLogger.CEP_LOGGER.debug(readToEnd(in));
+
+      in.close();
       out.close();
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -52,24 +86,23 @@ public class CepInterface {
   public static void registerQuery(String queryName, String queryCode) {
     ProcessEngineLogger.CEP_LOGGER.registeringQuery(queryName);
 
-    String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
+    //String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
+    String queryJSON = queryToJSON("SELECT *", notificationPath + "/engine-rest/event-service/REST/" + queryName);
 
-    try {
-      unicorn("POST", "/Unicorn/REST/EventQuery/REST/", "queryJson=" + URLEncoder.encode(queryJSON, "UTF-8"));
-    } catch(UnsupportedEncodingException e) {
-      throw new RuntimeException(e);
-    }
+    unicorn("POST", "EventQuery/REST/", queryJSON);
 
-    /*Response response = ClientBuilder.newClient().target(unicornUrl + "/EventQuery/REST").request().post(Entity.json(queryJSON));
+    /*
+    Response response = ClientBuilder.newClient().target(unicornUrl + "/EventQuery/REST").request().post(Entity.json(queryJSON));
     if (response.getStatus() != 200) {
       ProcessEngineLogger.CEP_LOGGER.registerQueryFailed(queryName, queryCode, response.getStatus());
-    }*/
+    }
+    */
   }
 
   public static void unregisterQuery(String queryName) {
     ProcessEngineLogger.CEP_LOGGER.unregisteringQuery(queryName);
 
-    unicorn("DELETE", "/Unicorn/REST/EventQuery/REST/" + queryName, "");
+    unicorn("DELETE", "EventQuery/REST/" + queryName, "");
   }
 
   public static void receiveEventMatch(String queryName) {
