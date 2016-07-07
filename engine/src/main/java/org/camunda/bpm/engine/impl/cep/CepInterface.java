@@ -1,7 +1,8 @@
 package org.camunda.bpm.engine.impl.cep;
 
-import org.camunda.bpm.engine.ProcessEngineException;
+import com.google.gson.Gson;
 import org.camunda.bpm.engine.impl.ProcessEngineLogger;
+<<<<<<< HEAD
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,16 +13,23 @@ import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.Response;
+=======
+>>>>>>> origin/master
 import org.camunda.bpm.engine.impl.context.Context;
-import org.camunda.bpm.engine.impl.interceptor.CommandContext;
-import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionManager;
 import org.camunda.bpm.engine.impl.persistence.entity.CepEventSubscriptionEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.EventSubscriptionManager;
 
-import java.util.List;
-
-import com.google.gson.Gson;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Created by lucas on 6/12/16.
@@ -45,20 +53,72 @@ public class CepInterface {
 
   }
 
+<<<<<<< HEAD
   private static void unicorn(String method, String path, String data) {
     try {
       Socket socket = new Socket("localhost", 8008);
       DataOutputStream out = new DataOutputStream(socket.getOutputStream());
       out.write((method + " " + path + " HTTP/1.1\nHostname: 127.0.0.1\n\n" + data + "\n").getBytes("UTF-8"));
+=======
+  private static String readToEnd(InputStream in) throws IOException {
+    byte buffer[] = new byte[2048];
+    StringBuilder result = new StringBuilder();
+    while (true) {
+      int read = in.read(buffer);
+      if (read <= 0) {
+        break;
+      } else {
+        result.append(new String(Arrays.copyOfRange(buffer, 0, read), "UTF-8"));
+      }
+    }
+    return result.toString();
+  }
+
+  private static String unicorn(String method, String path, String data) {
+    try {
+      String restPath = "/Unicorn/webapi/REST/" + path;
+      String sendData = "";
+      if (!data.equals("")) {
+        sendData = data + "\r\n";
+      }
+      Socket socket = new Socket("172.18.0.3", 8080);
+      DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+      out.write((
+          method + " " + restPath + " HTTP/1.1\r\n" +
+          "User-Agent: camunda\r\n" +
+          "Host: localhost\r\n" +
+          "Connection: close\r\n" +
+          "Content-Type: application/json\r\n" +
+          "Content-Length: " + sendData.getBytes("UTF-8").length + "\r\n" +
+          "\r\n"
+          + sendData
+      ).getBytes("UTF-8"));
+
+      DataInputStream in = new DataInputStream(socket.getInputStream());
+
+      String result = readToEnd(in);
+      Scanner scanner = new Scanner(result);
+      while(scanner.hasNextLine()) {
+        ProcessEngineLogger.CEP_LOGGER.debug(scanner.nextLine());
+      }
+
+      in.close();
+>>>>>>> origin/master
       out.close();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+<<<<<<< HEAD
+=======
+
+    return "";
+>>>>>>> origin/master
   }
 
   public static void registerQuery(String queryName, String queryCode) {
     ProcessEngineLogger.CEP_LOGGER.registeringQuery(queryName);
 
+<<<<<<< HEAD
     String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
 
     try {
@@ -71,12 +131,29 @@ public class CepInterface {
     if (response.getStatus() != 200) {
       ProcessEngineLogger.CEP_LOGGER.registerQueryFailed(queryName, queryCode, response.getStatus());
     }*/
+=======
+    //String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
+    String queryJSON = queryToJSON("SELECT *", notificationPath + "/engine-rest/event-service/REST/" + queryName);
+
+    unicorn("POST", "EventQuery/REST/", queryJSON);
+
+    /*
+    Response response = ClientBuilder.newClient().target(unicornUrl + "/EventQuery/REST").request().post(Entity.json(queryJSON));
+    if (response.getStatus() != 200) {
+      ProcessEngineLogger.CEP_LOGGER.registerQueryFailed(queryName, queryCode, response.getStatus());
+    }
+    */
+>>>>>>> origin/master
   }
 
   public static void unregisterQuery(String queryName) {
     ProcessEngineLogger.CEP_LOGGER.unregisteringQuery(queryName);
 
+<<<<<<< HEAD
     unicorn("DELETE", "/Unicorn/REST/EventQuery/REST/" + queryName, "");
+=======
+    unicorn("DELETE", "EventQuery/REST/" + queryName, "");
+>>>>>>> origin/master
   }
 
   public static void receiveEventMatch(String queryName) {

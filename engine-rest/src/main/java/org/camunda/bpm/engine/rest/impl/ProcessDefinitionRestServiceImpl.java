@@ -69,7 +69,7 @@ public class ProcessDefinitionRestServiceImpl extends AbstractRestProcessEngineA
   public ProcessDefinitionResource getProcessDefinitionById(
       String processDefinitionId) {
       // TODO: Here lies madness!
-      ProcessEngineLogger.INSTANCE.processEngineCreated("Receiving event " + processDefinitionId + ".");
+    ProcessEngineLogger.INSTANCE.processEngineCreated("Receiving event " + processDefinitionId + ".");
 
       // String queryName = CepInterface.queryNamesByUuid.get(data);
       CepInterface.receiveEventMatch(processDefinitionId);
@@ -80,6 +80,7 @@ public class ProcessDefinitionRestServiceImpl extends AbstractRestProcessEngineA
   @Override
 	public List<ProcessDefinitionDto> getProcessDefinitions(UriInfo uriInfo,
 	    Integer firstResult, Integer maxResults) {
+    ProcessEngineLogger.INSTANCE.processEngineCreated("Geeral Receiving event.");
     ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto(getObjectMapper(), uriInfo.getQueryParameters());
 	  List<ProcessDefinitionDto> definitions = new ArrayList<ProcessDefinitionDto>();
 
@@ -96,7 +97,7 @@ public class ProcessDefinitionRestServiceImpl extends AbstractRestProcessEngineA
 
 	  for (ProcessDefinition definition : matchingDefinitions) {
 	    ProcessDefinitionDto def = ProcessDefinitionDto.fromProcessDefinition(definition);
-	    definitions.add(def);
+      //definitions.add(def);
 	  }
 	  return definitions;
 	}

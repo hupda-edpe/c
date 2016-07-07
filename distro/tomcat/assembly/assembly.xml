@@ -58,7 +58,6 @@
         <!--<include>org.glassfish.jersey.core:*:jar</include>
         <include>org.glassfish.jersey.bundles.repackaged:*:jar</include>-->
         <include>org.glassfish.hk2:*:jar</include>
-
       </includes>
     </dependencySet>
 
