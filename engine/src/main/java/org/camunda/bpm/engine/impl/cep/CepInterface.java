@@ -124,8 +124,8 @@ public class CepInterface {
     }
   }
 
-  public static void sendEvent() {
-    ProcessEngineLogger.CEP_LOGGER.creatingEvent();
+  public static void sendEvent(String processInstanceId) {
+    ProcessEngineLogger.CEP_LOGGER.creatingEvent(processInstanceId);
   }
 
 

@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.camunda.bpm.engine.ProcessEngineException;
+import org.camunda.bpm.engine.delegate.Expression;
 import org.camunda.bpm.engine.impl.event.CepEventHandler;
 import org.camunda.bpm.engine.impl.event.MessageEventHandler;
 import org.camunda.bpm.engine.impl.event.SignalEventHandler;
@@ -39,10 +40,11 @@ public class EventSubscriptionDeclaration implements Serializable {
 
   protected final String eventName;
   protected final String eventType;
-
   protected boolean async;
+
   protected String activityId = null;
   protected String eventScopeActivityId = null;
+  protected Expression condition; // currently only working for CEP subscriptions
   protected boolean isStartEvent;
   protected Boolean isParallelMultiInstance = null;
 
@@ -71,6 +73,14 @@ public class EventSubscriptionDeclaration implements Serializable {
 
   public String getActivityId() {
     return activityId;
+  }
+
+  public void setCondition(Expression condition) {
+    this.condition = condition;
+  }
+
+  public Expression getCondition() {
+    return condition;
   }
 
   public void setEventScopeActivityId(String eventScopeActivityId) {
@@ -123,6 +133,9 @@ public class EventSubscriptionDeclaration implements Serializable {
     }
 
     eventSubscriptionEntity.setEventName(eventName);
+    if (condition != null) {
+      eventSubscriptionEntity.setCondition(condition);
+    }
     if (activityId != null) {
       ActivityImpl activity = execution.getProcessDefinition().findActivity(activityId);
       eventSubscriptionEntity.setActivity(activity);

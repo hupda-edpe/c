@@ -458,13 +458,19 @@ public class BpmnParse extends Parse {
     for (Element cepQueryElement : extensionElements.elements("cepQuery")) {
       String id = cepQueryElement.attribute("id");
       String queryName = cepQueryElement.attribute("name");
+      String queryCode = cepQueryElement.getText();
 
       if (id == null) {
         addError("CEP query must have an id", cepQueryElement);
       } else if (queryName == null) {
         addError("Auto-generated CEP queries have not been implemented yet. Please specify a name.", cepQueryElement);
       } else {
-        CepQueryDefinition cepQuery = new CepQueryDefinition(queryName);
+        CepQueryDefinition cepQuery = new CepQueryDefinition(queryName, queryCode);
+
+        String condition = cepQueryElement.attribute("condition");
+        if (condition != null && !condition.trim().isEmpty()) {
+          cepQuery.setCondition(expressionManager.createExpression(condition.trim()));
+        }
 
         for (CepQueryDefinition cepQueryDefinition : cepQueries.values()) {
           if (cepQueryDefinition.getName().equals(cepQuery.getName())) {
@@ -3143,8 +3149,18 @@ public class BpmnParse extends Parse {
       CepQueryDefinition queryDefinition = cepQueries.get(resolveName(queryRef));
       if (queryDefinition == null) {
         addError("Could not find CEP query with id '" + queryRef + "'", cepEventDefinitionElement);
+        return null;
       }
+      String condition = cepEventDefinitionElement.attribute("condition");
+      Expression conditionExpr = queryDefinition.getCondition();
+      if (condition != null && !condition.trim().isEmpty()) {
+        conditionExpr = expressionManager.createExpression(condition.trim());
+      }
+
       EventSubscriptionDeclaration cepEventDefinition = new EventSubscriptionDeclaration(queryDefinition.getName(), "cep");
+      if (conditionExpr != null) {
+        cepEventDefinition.setCondition(conditionExpr);
+      }
 
       boolean throwingAsync = "true".equals(cepEventDefinitionElement.attributeNS(CAMUNDA_BPMN_EXTENSIONS_NS, "async", "false"));
       cepEventDefinition.setAsync(throwingAsync);

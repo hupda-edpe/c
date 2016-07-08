@@ -13,6 +13,7 @@
 
 package org.camunda.bpm.engine.impl.cep;
 
+import org.camunda.bpm.engine.impl.el.Expression;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 
 import java.io.Serializable;
@@ -30,15 +31,30 @@ public class CepQueryDefinition implements Serializable {
   private String name;
   private String code;
 
-  public CepQueryDefinition(String name) {
+  private Expression condition;
+
+  public CepQueryDefinition(String name, String code) {
     this.name = name;
-    code = null;
+    this.code = code;
+    this.condition = null;
   }
 
-  public CepQueryDefinition(ProcessDefinitionEntity processDefinition, String id, String code) {
+  public void setCondition(Expression condition) {
+    this.condition = condition;
+  }
+
+  public boolean hasCondition() {
+    return (condition != null);
+  }
+
+  public Expression getCondition() {
+    return condition;
+  }
+
+  /*public CepQueryDefinition(ProcessDefinitionEntity processDefinition, String id, String code) {
     name = processDefinition.getId() + "_" + id;
     this.code = code;
-  }
+  }*/
 
 
   /*public String getId() {
@@ -54,16 +70,16 @@ public class CepQueryDefinition implements Serializable {
   }
 
   public void register() {
-    if (code != null) {
+    /*if (code != null) {
       // TODO: create query
-    }
-    CepInterface.registerQuery(name, "");
+    }*/
+    CepInterface.registerQuery(name, code);
   }
 
   public void unregister() {
-    if (code != null) {
+    /*if (code != null) {
       // TODO: delete query
-    }
+    }*/
     CepInterface.unregisterQuery(name);
   }
 

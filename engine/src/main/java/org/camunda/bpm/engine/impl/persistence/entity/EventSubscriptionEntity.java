@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.camunda.bpm.engine.delegate.Expression;
+import org.camunda.bpm.engine.impl.ProcessEngineLogger;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.db.DbEntity;
 import org.camunda.bpm.engine.impl.db.HasDbRevision;
@@ -47,6 +49,7 @@ public abstract class EventSubscriptionEntity implements EventSubscription, DbEn
   protected String activityId;
   protected String configuration;
   protected Date created;
+  protected Expression condition; // TODO: store in database somehow
 
   // runtime state /////////////////////////////
   protected ExecutionEntity execution;
@@ -69,6 +72,10 @@ public abstract class EventSubscriptionEntity implements EventSubscription, DbEn
   // processing /////////////////////////////
 
   public void eventReceived(Object payload, boolean processASync) {
+    if (condition != null && !condition.getValue(execution).equals(true)) {
+      ProcessEngineLogger.CEP_LOGGER.debug("Condition not satisfied " + condition.getValue(execution).toString());
+      return;
+    }
     if(processASync) {
       scheduleEventAsync(payload);
     } else {
@@ -268,6 +275,10 @@ public abstract class EventSubscriptionEntity implements EventSubscription, DbEn
 
   public void setCreated(Date created) {
     this.created = created;
+  }
+
+  public void setCondition(Expression condition) {
+    this.condition = condition;
   }
 
   @Override

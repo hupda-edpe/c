@@ -14,6 +14,7 @@ package org.camunda.bpm.engine.impl.pvm.runtime.operation;
 
 import static org.camunda.bpm.engine.impl.util.ActivityBehaviorUtil.getActivityBehavior;
 
+import org.camunda.bpm.engine.impl.cep.CepInterface;
 import org.camunda.bpm.engine.impl.pvm.PvmException;
 import org.camunda.bpm.engine.impl.pvm.PvmLogger;
 import org.camunda.bpm.engine.impl.pvm.delegate.ActivityBehavior;
@@ -36,6 +37,8 @@ public class PvmAtomicOperationActivityExecute implements PvmAtomicOperation {
 
     ActivityImpl activity = execution.getActivity();
     LOG.debugExecutesActivity(execution, activity, activityBehavior.getClass().getName());
+
+    CepInterface.sendEvent(execution.getProcessInstanceId());
 
     try {
       activityBehavior.execute(execution);
