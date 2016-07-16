@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 /**
  * Created by lucas on 6/12/16.
@@ -55,6 +57,7 @@ public class CepInterface {
   }
 
   private static String unicorn(String method, String path, String data) {
+    String header = "", body = "";
     try {
       String restPath = "/Unicorn/webapi/REST/" + path;
       String sendData = "";
@@ -77,18 +80,59 @@ public class CepInterface {
       DataInputStream in = new DataInputStream(socket.getInputStream());
 
       String result = readToEnd(in);
-      Scanner scanner = new Scanner(result);
-      while(scanner.hasNextLine()) {
-        ProcessEngineLogger.CEP_LOGGER.debug(scanner.nextLine());
+
+
+      // Seperate header and footer via regex.
+      Pattern pattern = Pattern.compile("(.*)??(\n\n|\n\r\n\r)(.*)");
+      Matcher matcher = pattern.matcher(result);
+      if (!matcher.matches())
+      {
+        // Assume that there is no main body.
+        body = null;
+        header = result;
+        ProcessEngineLogger.CEP_LOGGER.debug("Unicorn Response - response without body. Header is:\n" + header + "\n");
+      } else {
+        if (matcher.group(1) == "")
+        // This should not occur.
+        // Groups are numbered ltr starting with 1, number 0 is for the whole matched string.
+        {
+          ProcessEngineLogger.CEP_LOGGER.debug("Unicorn Response - Error in splitting header and body. Response was:\n" + result + "\n");
+          header = null;
+          body = null;
+        } else {
+          header = matcher.group(1);
+          body = matcher.group(3);
+        }
+      }
+      Scanner scanner = new Scanner(header);
+
+
+      pattern = Pattern.compile("HTTP/(\\d)*\\.(\\d)* (\\d*) .*");
+      matcher = pattern.matcher(header);
+      if (!matcher.matches()) {
+        ProcessEngineLogger.CEP_LOGGER.debug("Unicorn Response - Could not detect http status code. Header is:\n" + header + "\n");
+      }
+      if (matcher.group(3) != "200")
+      {
+        // Http Error.
+        ProcessEngineLogger.CEP_LOGGER.debug("Unicorn Response - Http error: " + matcher.group(3) + "\n");
       }
 
       in.close();
       out.close();
+
+      // If we need more information, we should use the scanner class.
+
+      //Scanner scanner = new Scanner(result);
+      //while(scanner.hasNextLine()) {
+      //  ProcessEngineLogger.CEP_LOGGER.debug(scanner.nextLine());
+      //}
+
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
 
-    return "";
+    return body;
   }
 
   public static void registerQuery(String queryName, String queryCode) {
