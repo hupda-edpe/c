@@ -13,10 +13,7 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -31,7 +28,7 @@ public class CepInterface {
   //public static String unicornUrl = "http://172.18.0.3:8080/Unicorn/REST";
   public static String unicornUrl = "http://127.0.0.1:8008/Unicorn/REST";
   public static String eventQueryApi = "/EventQuery/REST/";
-  public static Map<String, String> queryNamesByUuid;
+  public static Map<String, String> queryUuidByName;
   public static void initialize() {
     try {
       InetAddress IP = InetAddress.getLocalHost();
@@ -105,8 +102,9 @@ public class CepInterface {
       if (!matcher.matches()) {
         throw new RuntimeException("Unicorn response: Could not parse HTTP status code, header: " + header);
       }
-      if (!matcher.group(3).equals("200")) {
-        throw new RuntimeException("Unicorn response HTTP Error: " + matcher.group(3));
+      String status = matcher.group(3);
+      if (!status.startsWith("2")) {
+        throw new RuntimeException("Unicorn response HTTP Error " + matcher.group(3) + ": " + result);
       }
 
       in.close();
@@ -128,22 +126,24 @@ public class CepInterface {
     ProcessEngineLogger.CEP_LOGGER.registeringQuery(queryName);
 
     //String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
-    String queryJSON = queryToJSON("SELECT *", notificationPath + "/engine-rest/event-service/REST/" + queryName);
-
-    unicorn("POST", "EventQuery/REST/", queryJSON);
-
-    /*
-    Response response = ClientBuilder.newClient().target(unicornUrl + "/EventQuery/REST").request().post(Entity.json(queryJSON));
-    if (response.getStatus() != 200) {
-      ProcessEngineLogger.CEP_LOGGER.registerQueryFailed(queryName, queryCode, response.getStatus());
+    String queryJSON = queryToJSON("SELECT * FROM foobar", notificationPath + "/engine-rest/event-service/REST/" + queryName);
+    String uuid = unicorn("POST", "EventQuery/REST/", queryJSON);
+    // TODO: Move this to a proper position
+    if (queryUuidByName == null) {
+      queryUuidByName = new HashMap<String, String>();
     }
-    */
+    queryUuidByName.put(queryName, uuid);
   }
 
   public static void unregisterQuery(String queryName) {
     ProcessEngineLogger.CEP_LOGGER.unregisteringQuery(queryName);
 
-    unicorn("DELETE", "EventQuery/REST/" + queryName, "");
+    String uuid = queryUuidByName.get(queryName);
+    if (uuid == null) {
+      throw new RuntimeException("Unknown query name " + queryName);
+    }
+
+    unicorn("DELETE", "EventQuery/REST/" + uuid, "");
   }
 
   public static void receiveEventMatch(String queryName) {
