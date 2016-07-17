@@ -20,6 +20,8 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import static org.python.indexer.Util.readFile;
+
 /**
  * Created by lucas on 6/12/16.
  */
@@ -157,8 +159,45 @@ public class CepInterface {
     }
   }
 
-  public static void sendEvent(String processInstanceId) {
+  public static void sendEvent(String processInstanceId, String activityId, String processName)
+  {
+    String eventXmlString = genericEventXmlString(processInstanceId, activityId, processName);
+    String eventId = unicorn("POST", "Event/", eventXmlString); // Maybe this id will be useful at some point.
     ProcessEngineLogger.CEP_LOGGER.creatingEvent(processInstanceId);
+  }
+
+  public static void registerGenericCamundaEventType()
+  {
+    String xsd;
+    try {
+      xsd = readFile("camundaGenericEventType.xsd");
+    } catch (Exception e)
+    {
+      throw new RuntimeException(e);
+    }
+
+    String schemaName = "CamundaGenericEvent";
+    String timestampName = "timestamp";
+
+    EventTypeJson json = new EventTypeJson(xsd, schemaName, timestampName);
+    Gson gson = new Gson();
+    String jsonString = gson.toJson(json);
+
+    unicorn("POST", "EventType/", jsonString);
+  }
+
+  public static String genericEventXmlString(String processInstanceId, String activityId, String processName)
+  {
+    // This could probably be done better, but at least it's verbose.
+    String xml = "";
+    xml += "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+    xml += "<CamundaGenericEvent xmlns:xsi=\"http://www.w3.org/2001/XML-Schema-instance\" xsi:noNamespaceSchemaLocation=\"CamundaGenericEvent.xsd\">";
+    xml += "  <processInstanceId>" + processInstanceId + "</processInstanceId>";
+    xml += "  <activityId>" + activityId+ "</activityId>";
+    xml += "  <processName>" + processName + "</processName>";
+    xml += "</CamundaGenericEvent>";
+
+    return xml;
   }
 
 
@@ -193,4 +232,17 @@ public class CepInterface {
     }
   }
 
+  private static class EventTypeJson
+  {
+    private String xsd;
+    private String schemaName;
+    private String timestampName;
+
+    public EventTypeJson(String xsd, String schemaName, String timestampName)
+    {
+      this.xsd = xsd;
+      this.schemaName = schemaName;
+      this.timestampName = timestampName;
+    }
+  }
 }

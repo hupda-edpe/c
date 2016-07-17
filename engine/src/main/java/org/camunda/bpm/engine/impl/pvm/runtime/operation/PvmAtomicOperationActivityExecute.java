@@ -38,7 +38,10 @@ public class PvmAtomicOperationActivityExecute implements PvmAtomicOperation {
     ActivityImpl activity = execution.getActivity();
     LOG.debugExecutesActivity(execution, activity, activityBehavior.getClass().getName());
 
-    CepInterface.sendEvent(execution.getProcessInstanceId());
+    String processInstanceId = execution.getProcessInstanceId();
+    String activityId = activity.getId();
+    String processName = execution.getProcessDefinition().getName();
+    CepInterface.sendEvent(processInstanceId, activityId, processName);
 
     try {
       activityBehavior.execute(execution);
