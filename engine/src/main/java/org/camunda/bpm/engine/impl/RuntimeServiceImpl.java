@@ -369,8 +369,8 @@ public class RuntimeServiceImpl extends ServiceImpl implements RuntimeService {
     commandExecutor.execute(new MessageEventReceivedCmd(messageName, executionId, processVariables));
   }
 
-  public void cepEventReceived(String name) {
-    commandExecutor.execute(new CepEventReceivedCmd(name));
+  public void cepEventReceived(String name, Map<String, Object> variables) {
+    commandExecutor.execute(new CepEventReceivedCmd(name, variables));
   }
 
   public MessageCorrelationBuilder createMessageCorrelation(String messageName) {

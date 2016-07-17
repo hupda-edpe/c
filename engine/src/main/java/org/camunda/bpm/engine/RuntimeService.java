@@ -1656,5 +1656,5 @@ public interface RuntimeService {
    */
   ProcessInstantiationBuilder createProcessInstanceByKey(String processDefinitionKey);
 
-  void cepEventReceived(String name);
+  void cepEventReceived(String name, Map<String, Object> variables);
 }
