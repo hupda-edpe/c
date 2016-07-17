@@ -68,13 +68,7 @@ public class ProcessDefinitionRestServiceImpl extends AbstractRestProcessEngineA
   @Override
   public ProcessDefinitionResource getProcessDefinitionById(
       String processDefinitionId) {
-      // TODO: Here lies madness!
-      ProcessEngineLogger.INSTANCE.processEngineCreated("Receiving event " + processDefinitionId + ".");
-
-      // String queryName = CepInterface.queryNamesByUuid.get(data);
-      CepInterface.receiveEventMatch(processDefinitionId);
-
-      return new ProcessDefinitionResourceImpl(getProcessEngine(), processDefinitionId, relativeRootResourcePath, getObjectMapper());
+    return new ProcessDefinitionResourceImpl(getProcessEngine(), processDefinitionId, relativeRootResourcePath, getObjectMapper());
   }
 
   @Override

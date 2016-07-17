@@ -13,12 +13,6 @@
 
 package org.camunda.bpm.engine.impl.persistence.entity;
 
-import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotNull;
-
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-
 import org.camunda.bpm.engine.delegate.Expression;
 import org.camunda.bpm.engine.impl.ProcessEngineLogger;
 import org.camunda.bpm.engine.impl.context.Context;
@@ -31,6 +25,13 @@ import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.camunda.bpm.engine.impl.util.ClockUtil;
 import org.camunda.bpm.engine.runtime.EventSubscription;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotNull;
 
 /**
  * @author Daniel Meyer
@@ -71,10 +72,15 @@ public abstract class EventSubscriptionEntity implements EventSubscription, DbEn
 
   // processing /////////////////////////////
 
+  @SuppressWarnings("unchecked")
   public void eventReceived(Object payload, boolean processASync) {
-    if (condition != null && !condition.getValue(execution).equals(true)) {
-      ProcessEngineLogger.CEP_LOGGER.debug("Condition not satisfied " + condition.getValue(execution).toString());
-      return;
+    if (condition != null) {
+      execution.setVariables((Map<String, ?>) payload);
+      Object value = condition.getValue(execution);
+      if(!value.equals(true)) {
+        ProcessEngineLogger.CEP_LOGGER.debug("Condition not satisfied " + value.toString());
+        return;
+      }
     }
     if(processASync) {
       scheduleEventAsync(payload);

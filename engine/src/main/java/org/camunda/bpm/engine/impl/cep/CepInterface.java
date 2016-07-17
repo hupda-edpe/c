@@ -1,6 +1,7 @@
 package org.camunda.bpm.engine.impl.cep;
 
 import com.google.gson.Gson;
+import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.impl.ProcessEngineLogger;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.persistence.entity.CepEventSubscriptionEntity;
@@ -10,12 +11,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.python.indexer.Util.readFile;
 
@@ -26,7 +25,6 @@ import static org.python.indexer.Util.readFile;
 
 public class CepInterface {
   public static String notificationPath = "http://172.18.0.1:8080";
-  public static String eventPostApi = "/event/REST/";
   public static Map<String, String> queryUuidByName;
 
   private static String readToEnd(InputStream in) throws IOException {
@@ -151,14 +149,14 @@ public class CepInterface {
     unicorn("DELETE", "EventQuery/REST/" + uuid);
   }
 
-  public static void receiveEventMatch(String queryName) {
+  public static void receiveEventMatch(String queryName, Map<String, Object> variables) {
     final EventSubscriptionManager eventSubscriptionManager = Context.getCommandContext().getEventSubscriptionManager();
     // trigger all event subscriptions for the signal (start and intermediate)
     List<CepEventSubscriptionEntity> catchCepEventSubscriptions = eventSubscriptionManager
         .findCepEventSubscriptionsByQueryName(queryName);
     for (CepEventSubscriptionEntity cepEventSubscriptionEntity : catchCepEventSubscriptions) {
       // TODO: check whether the subscription entity is active; implement async
-      cepEventSubscriptionEntity.eventReceived(null, false);
+      cepEventSubscriptionEntity.eventReceived(variables, false);
     }
   }
 
@@ -166,7 +164,7 @@ public class CepInterface {
   {
     String eventXmlString = genericEventXmlString(processInstanceId, activityId, processName);
     unicorn("POST", "Event/", "application/xml", eventXmlString, false);
-    ProcessEngineLogger.CEP_LOGGER.creatingEvent(processInstanceId);
+    ProcessEngineLogger.CEP_LOGGER.creatingEvent(processInstanceId, activityId, processName);
   }
 
   public static void registerGenericCamundaEventType()
