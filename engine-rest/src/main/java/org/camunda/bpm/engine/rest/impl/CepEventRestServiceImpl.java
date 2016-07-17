@@ -27,11 +27,4 @@ public class CepEventRestServiceImpl extends AbstractRestProcessEngineAware impl
     getProcessEngine().getRuntimeService().cepEventReceived(queryName);
     return Response.status(200).entity("Well done!").build();
   }
-
-  @Override
-  public String getWelcome() {
-    ProcessEngineLogger.CEP_LOGGER.welcome();
-    getProcessEngine().getRuntimeService().cepEventReceived("myquery");
-    return "Welcome!";
-  }
 }

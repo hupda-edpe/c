@@ -17,9 +17,4 @@ public interface CepEventRestService {
   @Path("/REST/{queryName}")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response receiveEvent(@PathParam("queryName") String queryName, String data);
-
-  @GET
-  @Path("/welcome")
-  @Produces(MediaType.TEXT_PLAIN)
-  public String getWelcome();
 }

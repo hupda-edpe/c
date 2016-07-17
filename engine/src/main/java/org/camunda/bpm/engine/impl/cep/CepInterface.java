@@ -28,15 +28,6 @@ public class CepInterface {
   public static String notificationPath = "http://172.18.0.1:8080";
   public static String eventPostApi = "/event/REST/";
   public static Map<String, String> queryUuidByName;
-  public static void initialize() {
-    try {
-      InetAddress IP = InetAddress.getLocalHost();
-      notificationPath = IP.getHostAddress() + eventPostApi;
-    } catch (UnknownHostException e) {
-      // e.printStackTrace();
-    }
-
-  }
 
   private static String readToEnd(InputStream in) throws IOException {
     byte buffer[] = new byte[2048];
