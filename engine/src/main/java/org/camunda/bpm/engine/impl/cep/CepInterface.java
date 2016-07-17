@@ -23,11 +23,8 @@ import java.util.regex.Matcher;
 
 
 public class CepInterface {
-  public static String notificationPath = "http://172.18.0.1:8008";
+  public static String notificationPath = "http://172.18.0.1:8080";
   public static String eventPostApi = "/event/REST/";
-  //public static String unicornUrl = "http://172.18.0.3:8080/Unicorn/REST";
-  public static String unicornUrl = "http://127.0.0.1:8008/Unicorn/REST";
-  public static String eventQueryApi = "/EventQuery/REST/";
   public static Map<String, String> queryUuidByName;
   public static void initialize() {
     try {

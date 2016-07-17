@@ -21,7 +21,4 @@ public class CepLogger extends ProcessEngineLogger {
   public void creatingEvent(String processInstanceId) {
     logInfo("006", "Creating event for " + processInstanceId + ", NOT IMPLEMENTED");
   }
-  public void registerQueryFailed(String name, String code, int status) {
-    logInfo("007", "Query registering failed: {} {} {}", status, name, code);
-  }
 }
