@@ -43,13 +43,25 @@ public class CepInterface {
     return result.toString();
   }
 
-  private static String unicorn(String method, String path, String data) {
+  private static String unicorn(String method, String path) {
+    return unicorn(method, path, "", "");
+  }
+
+  private static String unicorn(String method, String path, String contentType, String data) {
+    return unicorn(method, path, contentType, data, true);
+  }
+
+  private static String unicorn(String method, String path, String contentType, String data, boolean waitForResponse) {
     String header = "", body = "";
     try {
       String restPath = "/Unicorn/webapi/REST/" + path;
       String sendData = "";
       if (!data.equals("")) {
         sendData = data + "\r\n";
+      }
+      String contentTypeHeader = "";
+      if (!contentType.equals("")) {
+        contentTypeHeader = "Content-Type: " + contentType + "\r\n";
       }
       Socket socket = new Socket("172.18.0.3", 8080);
       DataOutputStream out = new DataOutputStream(socket.getOutputStream());
@@ -58,11 +70,15 @@ public class CepInterface {
           "User-Agent: camunda\r\n" +
           "Host: localhost\r\n" +
           "Connection: close\r\n" +
-          "Content-Type: application/json\r\n" +
+          contentTypeHeader +
           "Content-Length: " + sendData.getBytes("UTF-8").length + "\r\n" +
           "\r\n"
           + sendData
       ).getBytes("UTF-8"));
+
+      if (!waitForResponse) {
+        return "";
+      }
 
       DataInputStream in = new DataInputStream(socket.getInputStream());
 
@@ -116,7 +132,7 @@ public class CepInterface {
     ProcessEngineLogger.CEP_LOGGER.registeringQuery(queryName);
 
     String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
-    String uuid = unicorn("POST", "EventQuery/REST/", queryJSON);
+    String uuid = unicorn("POST", "EventQuery/REST/", "application/json", queryJSON);
     // TODO: Move this to a proper position
     if (queryUuidByName == null) {
       queryUuidByName = new HashMap<String, String>();
@@ -132,7 +148,7 @@ public class CepInterface {
       throw new RuntimeException("Unknown query name " + queryName);
     }
 
-    unicorn("DELETE", "EventQuery/REST/" + uuid, "");
+    unicorn("DELETE", "EventQuery/REST/" + uuid);
   }
 
   public static void receiveEventMatch(String queryName) {
@@ -149,7 +165,7 @@ public class CepInterface {
   public static void sendEvent(String processInstanceId, String activityId, String processName)
   {
     String eventXmlString = genericEventXmlString(processInstanceId, activityId, processName);
-    String eventId = unicorn("POST", "Event/", eventXmlString); // Maybe this id will be useful at some point.
+    unicorn("POST", "Event/", "application/xml", eventXmlString, false);
     ProcessEngineLogger.CEP_LOGGER.creatingEvent(processInstanceId);
   }
 
@@ -170,7 +186,7 @@ public class CepInterface {
     Gson gson = new Gson();
     String jsonString = gson.toJson(json);
 
-    unicorn("POST", "EventType/", jsonString);
+    unicorn("POST", "EventType/", "application/json", jsonString);
   }
 
   public static String genericEventXmlString(String processInstanceId, String activityId, String processName)
@@ -178,11 +194,12 @@ public class CepInterface {
     // This could probably be done better, but at least it's verbose.
     String xml = "";
     xml += "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
-    xml += "<CamundaGenericEvent xmlns:xsi=\"http://www.w3.org/2001/XML-Schema-instance\" xsi:noNamespaceSchemaLocation=\"CamundaGenericEvent.xsd\">";
+    xml += "<AnEvent xmlns:xsi=\"http://www.w3.org/2001/XML-Schema-instance\" xsi:noNamespaceSchemaLocation=\"CamundaGenericEvent.xsd\">";
     xml += "  <processInstanceId>" + processInstanceId + "</processInstanceId>";
     xml += "  <activityId>" + activityId+ "</activityId>";
     xml += "  <processName>" + processName + "</processName>";
-    xml += "</CamundaGenericEvent>";
+    xml += "  <timestamp>" + System.currentTimeMillis() / 1000L + "</timestamp>";
+    xml += "</AnEvent>";
 
     return xml;
   }
