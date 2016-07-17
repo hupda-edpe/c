@@ -115,8 +115,7 @@ public class CepInterface {
   public static void registerQuery(String queryName, String queryCode) {
     ProcessEngineLogger.CEP_LOGGER.registeringQuery(queryName);
 
-    //String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
-    String queryJSON = queryToJSON("SELECT * FROM foobar", notificationPath + "/engine-rest/event-service/REST/" + queryName);
+    String queryJSON = queryToJSON(queryCode, notificationPath + "/engine-rest/event-service/REST/" + queryName);
     String uuid = unicorn("POST", "EventQuery/REST/", queryJSON);
     // TODO: Move this to a proper position
     if (queryUuidByName == null) {
