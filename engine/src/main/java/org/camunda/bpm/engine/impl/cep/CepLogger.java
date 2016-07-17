@@ -19,6 +19,6 @@ public class CepLogger extends ProcessEngineLogger {
     logInfo("005", "Unregistering query {}", name);
   }
   public void creatingEvent(String processInstanceId) {
-    logInfo("006", "Creating event for " + processInstanceId + ", NOT IMPLEMENTED");
+    logInfo("006", "Creating event for " + processInstanceId);
   }
 }

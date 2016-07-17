@@ -198,7 +198,7 @@ public class CepInterface {
     xml += "  <processInstanceId>" + processInstanceId + "</processInstanceId>";
     xml += "  <activityId>" + activityId+ "</activityId>";
     xml += "  <processName>" + processName + "</processName>";
-    xml += "  <timestamp>1466670229</timestamp>";
+    xml += "  <timestamp>" + System.currentTimeMillis() / 1000L + "</timestamp>";
     xml += "</AnEvent>";
 
     return xml;

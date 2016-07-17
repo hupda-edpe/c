@@ -12,7 +12,6 @@ public interface CepEventRestService {
 
   public static final String PATH = "/event-service";
 
-
   @POST
   @Path("/REST/{queryName}")
   @Consumes(MediaType.APPLICATION_JSON)
