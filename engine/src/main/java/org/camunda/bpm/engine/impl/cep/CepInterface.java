@@ -82,7 +82,7 @@ public class CepInterface {
       String result = readToEnd(in);
 
       // Separate header and footer via regex.
-      Pattern pattern = Pattern.compile("(.*?)(\n\n|\r\n\r\n)(.*)");
+      Pattern pattern = Pattern.compile("(.*?)(\n\n|\r\n\r\n)(.*)", Pattern.DOTALL);
       Matcher matcher = pattern.matcher(result);
       if (!matcher.matches()) {
         // Assume that there is no main body.
@@ -100,7 +100,7 @@ public class CepInterface {
         }
       }
 
-      pattern = Pattern.compile("HTTP/(\\d)*\\.(\\d)* (\\d*) .*");
+      pattern = Pattern.compile("HTTP/(\\d)*\\.(\\d)* (\\d*) .*", Pattern.DOTALL);
       matcher = pattern.matcher(header);
       if (!matcher.matches()) {
         throw new RuntimeException("Unicorn response: Could not parse HTTP status code, header: " + header);
