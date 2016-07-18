@@ -14,6 +14,7 @@
 package org.camunda.bpm.engine.impl.persistence.entity;
 
 
+import org.camunda.bpm.engine.impl.cep.CepInterface;
 
 /**
  * @author Lucas Mann
@@ -29,6 +30,14 @@ public class CepEventSubscriptionEntity extends EventSubscriptionEntity {
 
   public CepEventSubscriptionEntity() {
     eventType = "cep";
+  }
+
+  @Override
+  public void eventReceived(Object payload, boolean processASync) {
+    if (condition == null) {
+      condition = CepInterface.getCondition(eventName, activityId);
+    }
+    super.eventReceived(payload, processASync);
   }
 
   @Override

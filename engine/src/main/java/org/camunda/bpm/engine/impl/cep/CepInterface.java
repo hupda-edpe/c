@@ -26,6 +26,8 @@ import static org.python.indexer.Util.readFile;
 public class CepInterface {
   public static String notificationPath = "http://172.18.0.1:8080";
   public static Map<String, String> queryUuidByName;
+  public static Map<String, String> conditionByQuery;
+  public static Map<String, String> conditionByActivityId;
 
   private static String readToEnd(InputStream in) throws IOException {
     byte buffer[] = new byte[2048];
@@ -160,15 +162,13 @@ public class CepInterface {
     }
   }
 
-  public static void sendEvent(String processInstanceId, String activityId, String processName)
-  {
+  public static void sendEvent(String processInstanceId, String activityId, String processName) {
     String eventXmlString = genericEventXmlString(processInstanceId, activityId, processName);
     unicorn("POST", "Event/", "application/xml", eventXmlString, false);
     ProcessEngineLogger.CEP_LOGGER.creatingEvent(processInstanceId, activityId, processName);
   }
 
-  public static void registerGenericCamundaEventType()
-  {
+  public static void registerGenericCamundaEventType() {
     String xsd;
     try {
       xsd = readFile("camundaGenericEventType.xsd");
@@ -187,8 +187,7 @@ public class CepInterface {
     unicorn("POST", "EventType/", "application/json", jsonString);
   }
 
-  public static String genericEventXmlString(String processInstanceId, String activityId, String processName)
-  {
+  public static String genericEventXmlString(String processInstanceId, String activityId, String processName) {
     // This could probably be done better, but at least it's verbose.
     String xml = "";
     xml += "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
@@ -202,6 +201,27 @@ public class CepInterface {
     return xml;
   }
 
+  public static void registerQueryCondition(String query, String condition) {
+    if (conditionByQuery == null) {
+      conditionByQuery = new HashMap<String, String>();
+    }
+    conditionByQuery.put(query, condition);
+  }
+
+  public static void registerActivityCondition(String activityId, String condition) {
+    if (conditionByActivityId == null) {
+      conditionByActivityId = new HashMap<String, String>();
+    }
+    conditionByActivityId.put(activityId, condition);
+  }
+
+  public static String getCondition(String query, String activityId) {
+    String result = conditionByActivityId.get(activityId);
+    if (result != null) {
+      return result;
+    }
+    return conditionByQuery.get(query);
+  }
 
   // The following is taken from Unicorn Source.
   public static String queryToJSON(String queryString, String notificationPath) {

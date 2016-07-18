@@ -13,11 +13,11 @@
 
 package org.camunda.bpm.engine.impl.persistence.entity;
 
-import org.camunda.bpm.engine.delegate.Expression;
 import org.camunda.bpm.engine.impl.ProcessEngineLogger;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.db.DbEntity;
 import org.camunda.bpm.engine.impl.db.HasDbRevision;
+import org.camunda.bpm.engine.impl.el.ExpressionManager;
 import org.camunda.bpm.engine.impl.event.EventHandler;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.jobexecutor.EventSubscriptionJobDeclaration;
@@ -50,7 +50,7 @@ public abstract class EventSubscriptionEntity implements EventSubscription, DbEn
   protected String activityId;
   protected String configuration;
   protected Date created;
-  protected Expression condition; // TODO: store in database somehow
+  protected String condition; // TODO: store in database somehow
 
   // runtime state /////////////////////////////
   protected ExecutionEntity execution;
@@ -75,10 +75,14 @@ public abstract class EventSubscriptionEntity implements EventSubscription, DbEn
   @SuppressWarnings("unchecked")
   public void eventReceived(Object payload, boolean processASync) {
     if (condition != null) {
+      if (execution == null) {
+        execution = Context.getCommandContext().getExecutionManager().findExecutionById(executionId);
+      }
       execution.setVariables((Map<String, ?>) payload);
-      Object value = condition.getValue(execution);
+      ExpressionManager expressionManager = new ExpressionManager();
+      Object value = expressionManager.createExpression(condition).getValue(execution);
+      ProcessEngineLogger.CEP_LOGGER.debug(condition + " -> " + value);
       if(!value.equals(true)) {
-        ProcessEngineLogger.CEP_LOGGER.debug("Condition not satisfied " + value.toString());
         return;
       }
     }
@@ -283,7 +287,7 @@ public abstract class EventSubscriptionEntity implements EventSubscription, DbEn
     this.created = created;
   }
 
-  public void setCondition(Expression condition) {
+  public void setCondition(String condition) {
     this.condition = condition;
   }
 

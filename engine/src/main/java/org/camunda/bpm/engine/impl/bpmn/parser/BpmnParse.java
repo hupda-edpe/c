@@ -79,6 +79,7 @@ import org.camunda.bpm.engine.impl.bpmn.listener.ClassDelegateExecutionListener;
 import org.camunda.bpm.engine.impl.bpmn.listener.DelegateExpressionExecutionListener;
 import org.camunda.bpm.engine.impl.bpmn.listener.ExpressionExecutionListener;
 import org.camunda.bpm.engine.impl.bpmn.listener.ScriptExecutionListener;
+import org.camunda.bpm.engine.impl.cep.CepInterface;
 import org.camunda.bpm.engine.impl.cep.CepQueryDefinition;
 import org.camunda.bpm.engine.impl.core.model.BaseCallableElement;
 import org.camunda.bpm.engine.impl.core.model.BaseCallableElement.CallableElementBinding;
@@ -469,7 +470,8 @@ public class BpmnParse extends Parse {
 
         String condition = cepQueryElement.attribute("condition");
         if (condition != null && !condition.trim().isEmpty()) {
-          cepQuery.setCondition(expressionManager.createExpression(condition.trim()));
+          cepQuery.setCondition(condition.trim());
+          CepInterface.registerQueryCondition(queryName, condition);
         }
 
         for (CepQueryDefinition cepQueryDefinition : cepQueries.values()) {
@@ -3128,7 +3130,7 @@ public class BpmnParse extends Parse {
   }
 
   protected void parseCepCatchEventDefinition(Element element, ActivityImpl cepActivity, boolean isStartEvent) {
-    EventSubscriptionDeclaration cepDefinition = parseCepEventDefinition(element);
+    EventSubscriptionDeclaration cepDefinition = parseCepEventDefinition(cepActivity.getId(), element);
     cepDefinition.setActivityId(cepActivity.getId());
     cepDefinition.setStartEvent(isStartEvent);
     addEventSubscriptionDeclaration(cepDefinition, cepActivity.getEventScope(), element);
@@ -3140,7 +3142,7 @@ public class BpmnParse extends Parse {
     addEventSubscriptionJobDeclaration(catchingAsyncDeclaration, cepActivity, element);
   }
 
-  protected EventSubscriptionDeclaration parseCepEventDefinition(Element cepEventDefinitionElement) {
+  protected EventSubscriptionDeclaration parseCepEventDefinition(String activityId, Element cepEventDefinitionElement) {
     String queryRef = cepEventDefinitionElement.attribute("queryRef");
     if (queryRef == null) {
       addError("cepEventDefinition does not have required property 'queryRef'", cepEventDefinitionElement);
@@ -3152,9 +3154,10 @@ public class BpmnParse extends Parse {
         return null;
       }
       String condition = cepEventDefinitionElement.attribute("condition");
-      Expression conditionExpr = queryDefinition.getCondition();
+      String conditionExpr = queryDefinition.getCondition();
       if (condition != null && !condition.trim().isEmpty()) {
-        conditionExpr = expressionManager.createExpression(condition.trim());
+        conditionExpr = condition.trim();
+        CepInterface.registerActivityCondition(activityId, condition.trim());
       }
 
       EventSubscriptionDeclaration cepEventDefinition = new EventSubscriptionDeclaration(queryDefinition.getName(), "cep");

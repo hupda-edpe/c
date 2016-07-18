@@ -31,7 +31,7 @@ public class CepQueryDefinition implements Serializable {
   private String name;
   private String code;
 
-  private Expression condition;
+  private String condition;
 
   public CepQueryDefinition(String name, String code) {
     this.name = name;
@@ -39,7 +39,7 @@ public class CepQueryDefinition implements Serializable {
     this.condition = null;
   }
 
-  public void setCondition(Expression condition) {
+  public void setCondition(String condition) {
     this.condition = condition;
   }
 
@@ -47,7 +47,7 @@ public class CepQueryDefinition implements Serializable {
     return (condition != null);
   }
 
-  public Expression getCondition() {
+  public String getCondition() {
     return condition;
   }
 
