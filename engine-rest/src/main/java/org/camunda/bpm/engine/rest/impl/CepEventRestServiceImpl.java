@@ -28,26 +28,37 @@ public class CepEventRestServiceImpl extends AbstractRestProcessEngineAware impl
     super(engineName, objectMapper);
   }
 
+  private void dump(HashMap<String, Object> variables, JsonObject object, String prefix) {
+    for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+      String name = entry.getKey();
+      JsonElement element = entry.getValue();
+      if (element.isJsonPrimitive()) {
+        JsonPrimitive jsonValue = element.getAsJsonPrimitive();
+        TypedValue javaValue;
+
+        if (jsonValue.isBoolean()) {
+          javaValue = new PrimitiveTypeValueImpl.BooleanValueImpl(jsonValue.getAsBoolean());
+        } else if (jsonValue.isNumber()) {
+          javaValue = new PrimitiveTypeValueImpl.DoubleValueImpl(jsonValue.getAsDouble());
+        } else if (jsonValue.isString()) {
+          javaValue = new PrimitiveTypeValueImpl.StringValueImpl(jsonValue.getAsString());
+        } else {
+          throw new RuntimeException("unknown JSON primitive type");
+        }
+        variables.put(prefix + name, javaValue);
+      } else if (element.isJsonObject()) {
+        dump(variables, element.getAsJsonObject(), prefix + name + "_");
+      } else {
+        throw new RuntimeException("unknown JSON type");
+      }
+    }
+  }
+
   @Override
   public Response receiveEvent(String queryName, String data) {
     HashMap<String, Object> variables = new HashMap<String, Object>();
     JsonObject json = new JsonParser().parse(data).getAsJsonObject();
-    for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
-      String name = entry.getKey();
-      JsonPrimitive jsonValue = entry.getValue().getAsJsonPrimitive();
-      TypedValue javaValue;
-
-      if (jsonValue.isBoolean()) {
-        javaValue = new PrimitiveTypeValueImpl.BooleanValueImpl(jsonValue.getAsBoolean());
-      } else if (jsonValue.isNumber()) {
-        javaValue = new PrimitiveTypeValueImpl.DoubleValueImpl(jsonValue.getAsDouble());
-      } else if (jsonValue.isString()) {
-        javaValue = new PrimitiveTypeValueImpl.StringValueImpl(jsonValue.getAsString());
-      } else {
-        throw new RuntimeException("unknown JSON type");
-      }
-      variables.put(name, javaValue);
-    }
+    dump(variables, json, "");
     ProcessEngineLogger.CEP_LOGGER.receivedEvent(queryName, variables);
     getProcessEngine().getRuntimeService().cepEventReceived(queryName, variables);
     return Response.status(200).entity("Well done!").build();
