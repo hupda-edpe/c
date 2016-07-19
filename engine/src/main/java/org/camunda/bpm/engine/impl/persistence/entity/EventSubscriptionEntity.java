@@ -25,6 +25,7 @@ import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.process.ProcessDefinitionImpl;
 import org.camunda.bpm.engine.impl.util.ClockUtil;
 import org.camunda.bpm.engine.runtime.EventSubscription;
+import org.camunda.bpm.engine.variable.impl.value.PrimitiveTypeValueImpl;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -79,6 +80,7 @@ public abstract class EventSubscriptionEntity implements EventSubscription, DbEn
         execution = Context.getCommandContext().getExecutionManager().findExecutionById(executionId);
       }
       execution.setVariables((Map<String, ?>) payload);
+      execution.setVariable("processInstanceId", new PrimitiveTypeValueImpl.StringValueImpl(processInstanceId));
       ExpressionManager expressionManager = new ExpressionManager();
       Object value = expressionManager.createExpression(condition).getValue(execution);
       ProcessEngineLogger.CEP_LOGGER.debug(condition + " -> " + value);
